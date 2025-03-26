@@ -1,0 +1,6 @@
+[package]
+name = "cop290_sheet_rust"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
