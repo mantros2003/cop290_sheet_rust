@@ -1,16 +1,8 @@
 use std::collections::HashMap;
 
-// Enum for different types of data that a spreadsheet cell can store
-pub enum CellData {
-    IntData(i32),
-    FloatData(f32),
-}
+pub mod cell;       // Temporarily made pub, remove it later
 
-// Struct to store data of a cell
-struct Cell {
-    data: CellData,
-    error: bool,
-}
+use cell::{Cell, CellData};
 
 // Struct for database
 // Data is stored in a hashmap that maps cell index to the cell struct for that cell
@@ -43,7 +35,7 @@ impl Database {
             None => return Ok(&CellData::IntData(0)),
         };
 
-        if cell.error { return Err(true) }
+        if cell.has_error() { return Err(true) }
         Ok(&cell.data)
     }
 

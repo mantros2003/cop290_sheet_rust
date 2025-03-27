@@ -1,6 +1,6 @@
 mod database;
 
-use database::{Database, CellData};
+use database::{Database, cell::CellData};
 
 // Constants
 const MAXROWS: u16 = 999;
