@@ -4,8 +4,8 @@ pub mod cell;       // Temporarily made pub, remove it later
 
 use cell::{Cell, CellData};
 
-// Struct for database
-// Data is stored in a hashmap that maps cell index to the cell struct for that cell
+/// Struct for database
+/// Data is stored in a hashmap that maps cell index to the cell struct for that cell
 pub struct Database {
     pub num_rows: u16,
     pub num_cols: u16,
@@ -13,7 +13,7 @@ pub struct Database {
 }
 
 impl Database {
-    // Makes a new instance of database with num_rows rows and num_cols columns
+    /// Makes a new instance of database with num_rows rows and num_cols columns
     pub fn new(num_rows: u16, num_cols: u16) -> Self {
         Self {
             num_rows,
@@ -22,9 +22,9 @@ impl Database {
         }
     }
 
-    // Gets the data at cell represented by cell_idx
-    // returns Err(false) if cell out of range
-    // else returns Err(true) if cell has cell.error set as true
+    /// Gets the data at cell represented by cell_idx
+    /// returns Err(false) if cell out of range
+    /// else returns Err(true) if cell has cell.error set as true
     pub fn get(&self, cell_idx: u32) -> Result<&CellData, bool> {
         if !self.cell_in_range(cell_idx) { return Err(false) }
 
