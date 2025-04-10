@@ -10,6 +10,15 @@ pub struct Cell {
     error: bool,
 }
 
+impl std::fmt::Display for CellData {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            CellData::IntData(i) => write!(f, "{}", i),
+            CellData::FloatData(fl) => write!(f, "{:.2}", fl), // format to 2 decimal places
+        }
+    }
+}
+
 impl Cell {
     /// Returns a new integer cell
     pub fn new_i(data: i32) -> Cell {

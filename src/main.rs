@@ -1,6 +1,8 @@
 mod database;
+mod display;
 
 use database::{Database, cell::CellData};
+use display::print_spreadsheet;
 use std::env;
 use std::process;
 
