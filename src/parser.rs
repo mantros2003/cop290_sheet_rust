@@ -1,12 +1,11 @@
 #[derive(Default, Debug)]
-
-struct Response {
-    status: i32,
-    func: i32,
-    target: i32,
-    arg1: i32,
-    arg2: i32,
-    arg_type: i32,
+pub struct Response {
+    pub status: i32,
+    pub func: i32,
+    pub target: i32,
+    pub arg1: i32,
+    pub arg2: i32,
+    pub arg_type: i32,
 }
 
 fn ib(integer:i32) -> bool {
@@ -382,7 +381,7 @@ fn parse_func(s: &str, equal_expr: &mut String, exp1: &mut String, exp2: &mut St
 
 
 
-fn parse(s: &str) -> Response {
+pub fn parse(s: &str) -> Response {
     let mut returns = Response::default();
     let length = s.len();
 

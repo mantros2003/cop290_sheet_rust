@@ -1,8 +1,12 @@
 use std::collections::HashMap;
 
-pub mod cell;       // Temporarily made pub, remove it later
+pub mod cell;
+pub mod range;
+pub mod range_store;
 
 use cell::{Cell, CellData};
+
+use range_store::RangeStore;
 
 /// Struct for database
 /// Data is stored in a hashmap that maps cell index to the cell struct for that cell
@@ -10,6 +14,7 @@ pub struct Database {
     pub num_rows: u16,
     pub num_cols: u16,
     store: HashMap<u32, Cell>,
+    deps: RangeStore,
 }
 
 impl Database {
@@ -19,6 +24,7 @@ impl Database {
             num_rows,
             num_cols,
             store: HashMap::new(),
+            deps: RangeStore::new()
         }
     }
 

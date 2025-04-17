@@ -1,8 +1,12 @@
 mod database;
+mod parser;
+mod evaluator;
 mod display;
+mod utils;
 
-use database::{Database, cell::CellData};
+use database::Database;
 use display::print_spreadsheet;
+use parser::Response;
 use std::env;
 use std::process;
 
@@ -47,5 +51,22 @@ fn main() {
         process::exit(1);
     }
 
+    // Parameters
     let mut db: Database = Database::new(num_rows, num_cols);
+
+    let mut topleft: u32 = 0;
+    let mut running: bool = true;
+    let mut display_state: bool = true;
+
+    while running {
+        let mut input: String = String::new();
+        utils::get_ip(&mut input);
+
+        let r: Response = parser::parse(&input);
+        let ec: i32 = evaluator::evaluator(r, &mut db, &mut topleft, &mut running, &mut display_state);
+
+        if ec == -1 { continue };
+
+        if display_state { print_spreadsheet(&db, topleft); }
+    }
 }
