@@ -80,5 +80,5 @@ impl Cell {
         }
     }
 
-    pub fn rem_dep(&mut self) {self.dependencies = None; }
+    pub fn rem_dep(&mut self) { self.dependencies = None; }
 }

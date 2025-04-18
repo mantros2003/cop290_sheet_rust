@@ -54,6 +54,15 @@ impl DependencyObject {
             }
         }
     }
+
+    pub fn from_dep_data(target: u32, dep_data: DependencyData) -> DependencyObject {
+        DependencyObject {
+            target,
+            data: dep_data
+        }
+    }
+
+    pub fn get_target(&self) -> u32 { self.target }
 }
 
 impl RTreeObject for DependencyObject {
@@ -101,7 +110,6 @@ impl PartialEq for DependencyNums {
 
 impl PartialEq for DependencyObject {
     fn eq(&self, other: &Self) -> bool {
-        self.target == other.target && self.data.oper == other.data.oper &&
-        self.data.pre == other.data.pre && self.data.post == other.data.post
+        self.target == other.target
     }
 }

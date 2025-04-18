@@ -6,7 +6,7 @@ pub mod dep_store;
 
 use cell::{Cell, CellData};
 
-use range::{DependencyData, DependencyObject};
+use range::{DependencyData, DependencyObject, DependencyNums};
 use dep_store::DepStore;
 
 /// Struct for database
@@ -132,6 +132,14 @@ impl Database {
 
     pub fn rem_cell_parent_dep(&mut self, cell_idx: u32) {
         if let Ok(cell) = self.get_cell_mut(cell_idx) { cell.rem_dep(); }
+    }
+
+    pub fn add_dep_dep_store(&mut self, dep: DependencyObject) {
+        self.deps.insert(dep);
+    }
+
+    pub fn rem_dep_dep_store(&mut self, cell_idx: u32) {
+        self.deps.remove(DependencyObject::new(cell_idx, 0, DependencyNums::U32(0), DependencyNums::U32(0)));
     }
 
     // Children are those cells which depend on the parent cell
