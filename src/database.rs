@@ -6,7 +6,7 @@ pub mod dep_store;
 
 use cell::{Cell, CellData};
 
-use range::DependencyObject;
+use range::{DependencyData, DependencyObject};
 use dep_store::DepStore;
 
 /// Struct for database
@@ -123,6 +123,15 @@ impl Database {
     pub fn cell_in_range(&self, cell_idx: u32) -> bool {
         if (cell_idx / 1000) >= self.num_cols.into() || (cell_idx % 1000) >= self.num_rows.into() { false }
         else { true }
+    }
+
+    pub fn get_cell_parent_dep(&self, cell_idx: u32) -> Option<DependencyData> {
+        if let Ok(cell) = self.get_cell(cell_idx) { cell.get_dep() }
+        else { None }
+    }
+
+    pub fn rem_cell_parent_dep(&mut self, cell_idx: u32) {
+        if let Ok(cell) = self.get_cell_mut(cell_idx) { cell.rem_dep(); }
     }
 
     // Children are those cells which depend on the parent cell

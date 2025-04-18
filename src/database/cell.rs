@@ -1,32 +1,19 @@
-use super::range::Range;
+use super::range::DependencyData;
 use std::mem;
 
 /// Enum for different types of data that a spreadsheet cell can store
+#[derive(Debug, Clone, Copy)]
 pub enum CellData {
     IntData(i32),
     FloatData(f32),
 }
 
-pub enum DependencyType {
-    Range(Range),
-    Val(CellData)
-}
-
-/// Struct to store dependencies of a cell
-/// range_1 is a cell (low == high), or a range
-/// range_2 is None is cell only depends on range_1, else used for binary relations
-/// oper represents the function applied on range_1, or binary operator between range_1 and range_2
-struct Dependencies {
-    range_1: DependencyType,
-    range_2: DependencyType,
-    oper: u8,
-}
-
 /// Struct to store data of a cell
+#[derive(Debug)]
 pub struct Cell {
     data: CellData,
     error: bool,
-    dependencies: Option<Dependencies>,
+    dependencies: Option<DependencyData>,
 }
 
 impl std::fmt::Display for CellData {
@@ -79,20 +66,19 @@ impl Cell {
     /// Checks if the cell has error
     pub fn has_error(&self) -> bool { self.error }
 
-    pub fn modify_dep(&mut self, dep: Dependencies) -> Option<Dependencies> {
+    pub fn get_dep(&self) -> Option<DependencyData> { self.dependencies }
+
+    pub fn modify_dep(&mut self, dep: DependencyData) -> Option<DependencyData> {
         match self.dependencies.as_mut() {
             None => {
                 self.dependencies = Some(dep);
                 None
             }
-            Some(ret) => {
+            Some(_ret) => {
                 mem::replace(&mut self.dependencies, Some(dep))
             }
         }
     }
+
+    pub fn rem_dep(&mut self) {self.dependencies = None; }
 }
-
-trait ValidCellNumber {}
-
-impl ValidCellNumber for i32 {}
-impl ValidCellNumber for f32 {}

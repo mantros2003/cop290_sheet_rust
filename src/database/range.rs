@@ -1,20 +1,25 @@
 use rstar::{RTreeObject, AABB};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum DependencyNums {
     U32(u32),
     I32(i32),
     F32(f32)
 }
 
-#[derive(Debug)]
+/// Represents dependencies as oper(pre, post)
+/// This representation can represent all kinds of dependencies
+/// FN(RANGE_START: RANGE_END)
+/// OPER(CELL, VAL), e.g. DIV(2, A1) for =2/A1
+#[derive(Debug, Clone, Copy)]
 pub struct DependencyData {
     oper: u8,
     pre: DependencyNums,
     post: DependencyNums
 }
 
-#[derive(Debug)]
+/// Wrapper over DependencyData to save in Cell
+#[derive(Debug, Clone, Copy)]
 pub struct DependencyObject {
     target: u32,
     data: DependencyData
@@ -25,7 +30,17 @@ impl DependencyNums {
 
     pub fn new_uint(u: u32) -> DependencyNums { DependencyNums::U32(u) }
 
-    pub fn float(f: f32) -> DependencyNums { DependencyNums::F32(f) }
+    pub fn new_float(f: f32) -> DependencyNums { DependencyNums::F32(f) }
+}
+
+impl DependencyData {
+    pub fn new(oper: u8, pre: DependencyNums, post: DependencyNums) -> Self {
+        DependencyData {
+            oper,
+            pre,
+            post
+        }
+    }
 }
 
 impl DependencyObject {
