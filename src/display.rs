@@ -33,24 +33,24 @@ pub fn print_spreadsheet(db: &Database, top_left_cell: u32) {
         return;
     }
 
-    // Print column labels
-    print!("{:>5}", "");
+    // Print column headers (right-aligned within each cell)
+    print!("{:>5}", ""); // Top-left corner space
     for j in 0..cols {
         let label = generate_column_label(top_left_col + j);
         print!("{:>width$}", label, width = CELL_WIDTH as usize);
     }
     println!();
 
-    // Print rows with values
+    // Print each row
     for i in 0..rows {
-        print!("{:>3}  ", top_left_row + i + 1);
+        print!("{:>5}", top_left_row + i + 1); // Row label
         for j in 0..cols {
             let r = top_left_row + i;
             let c = top_left_col + j;
             match db.get(1000 * r + c) {
-                Ok(&ref d) => { print!("{:>width$}", d, width = CELL_WIDTH as usize); }
-                Err(true) => { print!("{:>width$}", "ERR", width = CELL_WIDTH as usize); }
-                Err(false) => { process::exit(1); }
+                Ok(&ref d) => print!("{:>width$}", d.to_string(), width = CELL_WIDTH as usize),
+                Err(true) => print!("{:>width$}", "ERR", width = CELL_WIDTH as usize),
+                Err(false) => process::exit(1),
             }
         }
         println!();

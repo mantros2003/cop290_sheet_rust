@@ -1,9 +1,6 @@
 use rstar::{RTreeObject, AABB};
 
 #[derive(Debug)]
-pub struct Range(u32, u32);
-
-#[derive(Debug)]
 pub enum DependencyNums {
     U32(u32),
     I32(i32),
@@ -11,17 +8,16 @@ pub enum DependencyNums {
 }
 
 #[derive(Debug)]
-pub struct DependencyObject {
-    target: u32,
+pub struct DependencyData {
     oper: u8,
     pre: DependencyNums,
     post: DependencyNums
 }
 
-impl Range {
-    pub fn new(low: u32, high: u32) -> Self{
-        Range(low, high)
-    }
+#[derive(Debug)]
+pub struct DependencyObject {
+    target: u32,
+    data: DependencyData
 }
 
 impl DependencyNums {
@@ -32,23 +28,15 @@ impl DependencyNums {
     pub fn float(f: f32) -> DependencyNums { DependencyNums::F32(f) }
 }
 
-impl RTreeObject for Range {
-    type Envelope = AABB<[i64; 2]>;
-
-    fn envelope(&self) -> Self::Envelope {
-        let p1 = [(self.0 % 1000) as i64, (self.0 / 1000) as i64];
-        let p2 = [(self.1 % 1000) as i64, (self.1 / 1000) as i64];
-        AABB::from_corners(p1, p2)
-    }
-}
-
 impl DependencyObject {
     pub fn new(target: u32, oper: u8, pre: DependencyNums, post: DependencyNums) -> Self {
         DependencyObject {
             target,
-            oper,
-            pre,
-            post
+            data: DependencyData {
+                oper,
+                pre,
+                post
+            }
         }
     }
 }
@@ -61,7 +49,7 @@ impl RTreeObject for DependencyObject {
             [(c % 1000) as i64, (c / 1000) as i64]
         }
 
-        match (&self.pre, &self.post) {
+        match (&self.data.pre, &self.data.post) {
             (DependencyNums::U32(c1), DependencyNums::U32(c2)) => {
                 AABB::from_corners(to_point(*c1), to_point(*c2))
             }
@@ -98,7 +86,7 @@ impl PartialEq for DependencyNums {
 
 impl PartialEq for DependencyObject {
     fn eq(&self, other: &Self) -> bool {
-        self.target == other.target && self.oper == other.oper &&
-        self.pre == other.pre && self.post == other.post
+        self.target == other.target && self.data.oper == other.data.oper &&
+        self.data.pre == other.data.pre && self.data.post == other.data.post
     }
 }

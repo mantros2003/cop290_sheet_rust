@@ -62,6 +62,40 @@ pub fn evaluator(
         return 0;
     }
 
+    if !db.cell_in_range((r.target - 1001) as u32) { return 4; }
+
+    // Command: scroll_to
+    if r.func == 20 {
+        *topleft = (r.target - 1001) as u32;
+        return 0;
+    }
+
+    if let Ok(init) = db.is_cell_initialized((r.target - 1001) as u32) {
+        if !init {
+            let _ = db.set_int((r.target - 1001) as u32, 0);
+        }
+    }
+
+    // let mut target;
+    // if let Ok(cell) = db.get_cell_mut((r.target - 1001) as u32) { target = cell; }
+
+    if (r.arg_type & 2 == 1 && !db.cell_in_range((r.arg1 - 1001) as u32))
+        || (r.arg_type & 1 == 1 && !db.cell_in_range((r.arg1 - 1001) as u32)) {
+        return 4;
+    }
+
+    let old_error: bool;
+    if let Err(val) = db.get((r.target - 1001) as u32) { old_error = val; }
+
+    // let old_dep = 
+    // Get old dependency
+    // Then remove dependency from the cell and store a copy
+
+    if r.func == 1 {
+        let _ = db.set_int((r.target - 1001) as u32, r.arg1);
+        let _ = db.set_error((r.target - 1001) as u32, false);
+    }
+
     // Fallback return, if none of the commands match
     0
 }

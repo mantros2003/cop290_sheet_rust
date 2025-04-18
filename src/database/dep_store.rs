@@ -1,13 +1,13 @@
 use rstar::{RTree, AABB};
 use super::range::DependencyObject;
 
-pub struct RangeStore {
+pub struct DepStore {
     store: RTree<DependencyObject>,
 }
 
-impl RangeStore {
+impl DepStore {
     pub fn new() -> Self {
-        RangeStore {
+        DepStore {
             store: RTree::new()
         }
     }
@@ -35,8 +35,8 @@ mod tests {
     use super::super::range::DependencyNums;
 
     #[test]
-    fn test_range_store() {
-        let mut store = RangeStore::new();
+    fn test_dep_store() {
+        let mut store = DepStore::new();
 
         store.insert(DependencyObject::new(1001, 0, DependencyNums::U32(2002), DependencyNums::U32(4004)));
         store.insert(DependencyObject::new(10010, 0, DependencyNums::U32(5005), DependencyNums::U32(9009)));

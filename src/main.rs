@@ -13,6 +13,7 @@ use std::process;
 // Constants
 const MAXROWS: u16 = 999;
 const MAXCOLS: u16 = 18278;
+const BUFFSZ: u16 = 256;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -59,14 +60,13 @@ fn main() {
     let mut display_state: bool = true;
 
     while running {
-        let mut input: String = String::new();
-        utils::get_ip(&mut input);
+        if display_state { print_spreadsheet(&db, topleft); }
+        
+        let input = utils::get_ip(BUFFSZ as usize);
 
         let r: Response = parser::parse(&input);
         let ec: i32 = evaluator::evaluator(r, &mut db, &mut topleft, &mut running, &mut display_state);
 
         if ec == -1 { continue };
-
-        if display_state { print_spreadsheet(&db, topleft); }
     }
 }

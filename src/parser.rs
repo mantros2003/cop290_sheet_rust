@@ -8,9 +8,9 @@ pub struct Response {
     pub arg_type: i32,
 }
 
-fn ib(integer:i32) -> bool {
+fn ib(integer: i32) -> bool {
     if integer == 0 {
-         return false ;
+        return false;
     }
     return true ;
 }
@@ -567,9 +567,15 @@ pub fn parse(s: &str) -> Response {
     returns
 }
 
-fn main() {
-    let str = "A1=MAX(B1:X1)";
-    let ret = parse(str);
+#[cfg(test)]
+mod tests{
+    use super::*;
 
-    println!("{ret:?}");
+    #[test]
+    fn test_1() {
+        let str = "A1=MAX(B1:X1)";
+        let ret = parse(str);
+
+        println!("{ret:?}");
+    }
 }
