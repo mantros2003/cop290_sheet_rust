@@ -25,14 +25,6 @@ pub struct DependencyObject {
     data: DependencyData
 }
 
-impl DependencyNums {
-    pub fn new_int(i: i32) -> DependencyNums { DependencyNums::I32(i) }
-
-    pub fn new_uint(u: u32) -> DependencyNums { DependencyNums::U32(u) }
-
-    pub fn new_float(f: f32) -> DependencyNums { DependencyNums::F32(f) }
-}
-
 impl DependencyData {
     pub fn new(oper: u8, pre: DependencyNums, post: DependencyNums) -> Self {
         DependencyData {
@@ -40,6 +32,16 @@ impl DependencyData {
             pre,
             post
         }
+    }
+
+    pub fn get_oper(&self) -> u8 { self.oper }
+
+    pub fn get_pre(&self) -> DependencyNums {
+        self.pre
+    }
+
+    pub fn get_post(&self) -> DependencyNums {
+        self.post
     }
 }
 

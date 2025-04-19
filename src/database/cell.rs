@@ -9,7 +9,7 @@ pub enum CellData {
 }
 
 /// Struct to store data of a cell
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Cell {
     data: CellData,
     error: bool,
@@ -44,6 +44,10 @@ impl Cell {
         }
     }
 
+    pub fn set_data(&mut self, data: CellData) {
+        self.data = data;
+    }
+
     /// Sets int data
     pub fn set_data_i(&mut self, data: i32) -> () {
         self.data = CellData::IntData(data);
@@ -65,6 +69,11 @@ impl Cell {
 
     /// Checks if the cell has error
     pub fn has_error(&self) -> bool { self.error }
+
+    pub fn has_dep(&self) -> bool {
+        if let None = self.dependencies { false }
+        else { true }
+    }
 
     pub fn get_dep(&self) -> Option<DependencyData> { self.dependencies }
 

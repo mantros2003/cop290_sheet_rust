@@ -48,12 +48,22 @@ impl Database {
         };
     }
 
-    pub fn get_cell(&self, cell_idx: u32) -> Result<&Cell, bool>{
+    pub fn get_cell(&self, cell_idx: u32) -> Result<&Cell, bool> {
         if !self.cell_in_range(cell_idx) { return Err(false) }
 
         let cell = self.store.get(&cell_idx);
         match cell {
             Some(cell) => return Ok(cell),
+            None => return Err(true),
+        };
+    }
+
+    pub fn get_cell_clone(&self, cell_idx: u32) -> Result<Cell, bool> {
+        if !self.cell_in_range(cell_idx) { return Err(false) }
+
+        let cell = self.store.get(&cell_idx);
+        match cell {
+            Some(&cell) => return Ok(cell.clone()),
             None => return Err(true),
         };
     }

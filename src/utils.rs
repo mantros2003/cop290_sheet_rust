@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use crate::database::Database;
 
 enum VisitState {
-    NotVisited,
     Visiting,
     Visited,
 }

@@ -9,6 +9,8 @@ use display::print_spreadsheet;
 use parser::Response;
 use std::env;
 use std::process;
+use std::time::Duration;
+use std::time::Instant;
 
 // Constants
 const MAXROWS: u16 = 999;
@@ -17,9 +19,17 @@ const BUFFSZ: u16 = 256;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
+    let run_extension;
 
-    if args.len() != 3 {
-        println!("Exactly 2 int arguments required");
+    if args.len() == 4 {
+        if args[3] == "--extension" { run_extension = true; }
+        else {
+            println!("Invalid flag {}", args[3]);
+            process::exit(1);
+        }
+    } else if args.len() == 3 { run_extension = false; }
+    else {
+        println!("Either 2 or 3 arguments required");
         process::exit(1);
     }
 
@@ -59,14 +69,22 @@ fn main() {
     let mut running: bool = true;
     let mut display_state: bool = true;
 
-    while running {
-        if display_state { print_spreadsheet(&db, topleft); }
-        
-        let input = utils::get_ip(BUFFSZ as usize);
+    if !run_extension {
+        let mut duration: Duration = Duration::new(0, 0);
+        while running {
+            if display_state { print_spreadsheet(&db, topleft); }
+            print!("[{:.1}] (ok) > ", duration.as_millis() as f64 / 1000f64);
 
-        let r: Response = parser::parse(&input);
-        let ec: i32 = evaluator::evaluator(r, &mut db, &mut topleft, &mut running, &mut display_state);
+            let input = utils::get_ip(BUFFSZ as usize);
 
-        if ec == -1 { continue };
-    }
+            let start = Instant::now();
+
+            let r: Response = parser::parse(&input);
+            let ec: i32 = evaluator::evaluator(r, &mut db, &mut topleft, &mut running, &mut display_state);
+
+            duration = start.elapsed();
+
+            if ec == -1 { continue };
+        }
+    } else {}
 }
