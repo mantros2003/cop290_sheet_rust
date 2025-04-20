@@ -15,7 +15,8 @@ pub struct Database {
     pub num_rows: u16,
     pub num_cols: u16,
     store: HashMap<u32, Cell>,
-    deps: DepStore,
+    range_deps: DepStore,
+    point_deps: HashMap<u32, Vec<u32>>
 }
 
 impl Database {
@@ -25,7 +26,8 @@ impl Database {
             num_rows,
             num_cols,
             store: HashMap::new(),
-            deps: DepStore::new()
+            range_deps: DepStore::new(),
+            point_deps: HashMap::new()
         }
     }
 
@@ -144,23 +146,47 @@ impl Database {
         if let Ok(cell) = self.get_cell_mut(cell_idx) { cell.rem_dep(); }
     }
 
-    pub fn add_dep_dep_store(&mut self, dep: DependencyObject) {
-        self.deps.insert(dep);
+    pub fn add_dep_point(&mut self, dep: u32, target: u32) {
+        match self.point_deps.get_mut(&dep) {
+            Some(v) => { v.push(target); },
+            None => { self.point_deps.insert(dep, vec![target]); }
+        }
     }
 
-    pub fn rem_dep_dep_store(&mut self, cell_idx: u32) {
-        self.deps.remove(DependencyObject::new(cell_idx, 0, DependencyNums::U32(0), DependencyNums::U32(0)));
+    pub fn rem_dep_point(&mut self, dep: u32, target: u32) {
+        match self.point_deps.get_mut(&dep) {
+            Some(v) => { v.retain(|&val| val != target); },
+            None => {},
+        }
+    }
+
+    pub fn add_dep_range(&mut self, dep: DependencyObject) {
+        self.range_deps.insert(dep);
+    }
+
+    pub fn rem_dep_range(&mut self, cell_idx: u32) {
+        self.range_deps.remove(DependencyObject::new(cell_idx, 0, DependencyNums::U32(0), DependencyNums::U32(0)));
     }
 
     // Children are those cells which depend on the parent cell
     pub fn cell_has_child(&self, cell_idx: u32) -> bool {
-        let deps = self.deps.get_from_point(cell_idx);
+        let deps = self.range_deps.get_from_point(cell_idx);
+        let pdeps_len = match self.point_deps.get(&cell_idx) {
+            Some(v) => { v.len() },
+            None => { 0 }
+        };
 
-        deps.len() == 0
+        deps.len() + pdeps_len == 0
     }
 
-    pub fn get_cell_children(&self, cell_idx: u32) -> Vec<&DependencyObject> {
-        self.deps.get_from_point(cell_idx)
+    pub fn get_cell_children(&self, cell_idx: u32) -> Vec<u32> {
+        let mut range_dep: Vec<u32> = self.range_deps.get_from_point(cell_idx).iter().map(|dep| dep.get_target()).collect();
+        let point_dep = match self.point_deps.get(&cell_idx){
+            Some(&ref v) => { v.clone() },
+            None => vec![],
+        };
+        range_dep.extend(point_dep);
+        range_dep
     }
 }
 

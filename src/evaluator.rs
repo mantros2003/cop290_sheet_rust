@@ -1,7 +1,6 @@
 use core::{f32, panic};
-use std::cell;
-
-use crate::database::cell::CellData;
+use std::thread::sleep;
+use crate::database::cell::{Cell, CellData};
 use crate::database::range::{DependencyData, DependencyNums, DependencyObject};
 use crate::parser::Response;
 use crate::database::Database;
@@ -17,18 +16,26 @@ fn evaluate(db: &mut Database, cell_idx: u32) {
     let dep;
     if let Some(dep_obj) = target.get_dep() { dep = dep_obj; }
     else { panic!(); }
+
+    //println!("{dep:?}");
     
-    let _ = drop(target);
+    //let _ = drop(target);
 
     if dep.get_oper() == 2 {
         let parent;
-        if let Ok(cell) = db.get_cell_clone({
+
+        // Getting the parent
+        // If the cell is uninitialized, we are making a new cell and assigning it to the parent var
+        match db.get_cell_clone({
             match dep.get_pre() {
                 DependencyNums::U32(idx) => idx,
                 _ => panic!()
             }
-        }) { parent = cell; }
-        else {panic!()}
+        }) {
+            Ok(cell) => { parent = cell; }
+            Err(true) => { parent = Cell::new_i(0); }
+            _ => { panic!(); }
+        }
 
         let target;
         if let Ok(cell) = db.get_cell_mut(cell_idx) { target = cell }
@@ -44,21 +51,29 @@ fn evaluate(db: &mut Database, cell_idx: u32) {
         let pre;
         let post;
 
-        if let Ok(cell) = db.get_cell_clone({
-            match dep.get_pre() {
-                DependencyNums::U32(idx) => idx,
-                _ => panic!()
-            }
-        }) { pre = cell; }
-        else {panic!()}
+        match dep.get_pre() {
+            DependencyNums::U32(idx) => {
+                match db.get_cell_clone(idx) {
+                    Ok(cell) => { pre = cell; }
+                    Err(true) => { pre = Cell::new_i(0); }
+                    _ => { panic!(); }
+                }
+            },
+            DependencyNums::I32(i) => { pre = Cell::new_i(i); }
+            DependencyNums::F32(f) => { pre = Cell::new_f(f); }
+        }
 
-        if let Ok(cell) = db.get_cell_clone({
-            match dep.get_post() {
-                DependencyNums::U32(idx) => idx,
-                _ => panic!()
-            }
-        }) { post = cell; }
-        else {panic!()}
+        match dep.get_post() {
+            DependencyNums::U32(idx) => {
+                match db.get_cell_clone(idx) {
+                    Ok(cell) => { post = cell; }
+                    Err(true) => { post = Cell::new_i(0); }
+                    _ => { panic!(); }
+                }
+            },
+            DependencyNums::I32(i) => { post = Cell::new_i(i); }
+            DependencyNums::F32(f) => { post = Cell::new_f(f); }
+        }
 
         let target;
         if let Ok(cell) = db.get_cell_mut(cell_idx) { target = cell }
@@ -73,22 +88,22 @@ fn evaluate(db: &mut Database, cell_idx: u32) {
         let pre_data;
         let post_data;
 
-        if let Ok(CellData::IntData(data)) = pre.get_data() { pre_data = data; }
+        if let Ok(&data) = pre.get_data() { pre_data = data; }
         else { panic!(); }
 
-        if let Ok(CellData::IntData(data)) = post.get_data() { post_data = data; }
+        if let Ok(&data) = post.get_data() { post_data = data; }
         else { panic!(); }
 
         match dep.get_oper() {
-            3 => { target.set_data_i(pre_data + post_data); }
-            4 => { target.set_data_i(pre_data - post_data); }
-            5 => { target.set_data_i(pre_data * post_data); }
+            3 => { target.set_data(pre_data + post_data); }
+            4 => { target.set_data(pre_data - post_data); }
+            5 => { target.set_data(pre_data * post_data); }
             6 => {
-                if *post_data == 0 {
-                    target.set_error(true);
-                    return;
-                } else {
-                    target.set_data_i(pre_data + post_data);
+                match pre_data / post_data {
+                    Ok(data) => { target.set_data(data); },
+                    Err(_) => {
+                        target.set_error(true);
+                    }
                 }
             }
             _ => {}
@@ -107,7 +122,7 @@ fn evaluate(db: &mut Database, cell_idx: u32) {
 }
 
 fn min_fn(db: &mut Database, cell_idx: u32) {
-    let mut min_val: f32 = f32::MIN;
+    let mut min_val: f32 = f32::MAX;
 
     let pre;
     let post;
@@ -160,7 +175,7 @@ fn min_fn(db: &mut Database, cell_idx: u32) {
 }
 
 fn max_fn(db: &mut Database, cell_idx: u32) {
-    let mut max_val: f32 = f32::MAX;
+    let mut max_val: f32 = f32::MIN;
 
     let pre;
     let post;
@@ -212,13 +227,164 @@ fn max_fn(db: &mut Database, cell_idx: u32) {
     target.set_data_f(max_val);
 }
 
-fn avg_fn(db: &mut Database, cell_idx: u32) {}
+fn avg_fn(db: &mut Database, cell_idx: u32) {
+    sum_fn(db, cell_idx);
 
-fn sum_fn(db: &mut Database, cell_idx: u32) {}
+    let mut avg;
+    avg = match db.get(cell_idx) {
+        Ok(data) => match data {
+            CellData::FloatData(f) => { *f },
+            CellData::IntData(i) => { *i as f32 },
+        },
+        Err(true) => { return; }
+        Err(false) => { panic!(); }
+    };
+
+    let pre;
+    let post;
+    if let Some(dep) = db.get_cell_parent_dep(cell_idx) {
+        match (dep.get_pre(), dep.get_post()) {
+            (DependencyNums::U32(pred), DependencyNums::U32(posd)) => {
+                pre = pred;
+                post = posd;
+            }
+            (_, _) => { panic!(); }
+        }
+    } else { panic!(); }
+
+    let row_low = pre % 1000;
+    let row_high = post % 1000;
+    let col_low = pre / 1000;
+    let col_high = post / 1000;
+
+    avg /= ((row_high - row_low + 1) * (col_high - col_low + 1)) as f32;
+
+    let target;
+    if let Ok(cell) = db.get_cell_mut(cell_idx) { target = cell }
+    else { panic!() };
+
+    target.set_data_f(avg);
+}
+
+fn sum_fn(db: &mut Database, cell_idx: u32) {
+    let mut sum: f32 = 0.0;
+
+    let pre;
+    let post;
+    if let Some(dep) = db.get_cell_parent_dep(cell_idx) {
+        match (dep.get_pre(), dep.get_post()) {
+            (DependencyNums::U32(pred), DependencyNums::U32(posd)) => {
+                pre = pred;
+                post = posd;
+            }
+            (_, _) => { panic!(); }
+        }
+    } else { panic!(); }
+
+    let row_low = pre % 1000;
+    let row_high = post % 1000;
+    let col_low = pre / 1000;
+    let col_high = post / 1000;
+
+    for col in col_low..=col_high {
+        for row in row_low..=row_high {
+            let data;
+            let _data = db.get(1000 * col + row);
+            data = match _data {
+                Ok(d) => {
+                    match d {
+                        CellData::IntData(i) => {*i as f32},
+                        CellData::FloatData(f) => {*f},
+                    }
+                }
+                Err(true) => {
+                    let target;
+                    if let Ok(cell) = db.get_cell_mut(cell_idx) { target = cell }
+                    else { panic!() };
+
+                    target.set_error(true);
+                    return;
+                }
+                Err(false) => { panic!(); }
+            };
+
+            sum += data;
+        }
+    }
+
+    let target;
+    if let Ok(cell) = db.get_cell_mut(cell_idx) { target = cell }
+    else { panic!() };
+
+    target.set_data_f(sum);
+}
 
 fn stdev_fn(db: &mut Database, cell_idx: u32) {}
 
-fn sleep_fn(db: &mut Database, cell_idx: u32) {}
+fn sleep_fn(db: &mut Database, cell_idx: u32) {
+    let dep = db.get_cell_parent_dep(cell_idx);
+
+    let dep = match dep {
+        Some(dep) => { dep },
+        None => { panic!(); },
+    };
+
+    let pre = dep.get_pre();
+
+    match pre {
+        DependencyNums::U32(u) => {
+            match db.get_cell_clone(u) {
+                Ok(parent) => {
+                    let target;
+                    if let Ok(cell) = db.get_cell_mut(cell_idx) { target = cell }
+                    else { panic!() };
+
+                    match parent.get_data() {
+                        Ok(d) => {
+                            match d {
+                                CellData::IntData(i) => {
+                                    if *i >= 0 { sleep(std::time::Duration::from_secs(*i as u64)); }
+                                }
+                                CellData::FloatData(f) => {
+                                    if *f >= 0.0 { sleep(std::time::Duration::from_secs_f32(*f)); }
+                                }
+                            }
+                            target.set_data(*d);
+                            target.set_error(false);
+                            return;
+                        }
+                        Err(()) => {
+                            target.set_error(true);
+                            return;
+                        }
+                    }
+                },
+                Err(false) => { panic!(); },
+                Err(true) => {
+                    let target;
+                    if let Ok(cell) = db.get_cell_mut(cell_idx) { target = cell }
+                    else { panic!() };
+                    target.set_data_i(0);
+                    target.set_error(false);
+                    return;
+                }
+            }
+        },
+        DependencyNums::I32(i) => {
+            let time = if i < 0 { 0u64 } else { i as u64 };
+            sleep(std::time::Duration::from_secs(time));
+
+            let target;
+            if let Ok(cell) = db.get_cell_mut(cell_idx) { target = cell }
+            else { panic!() };
+            target.set_data_i(i);
+            target.set_error(false);
+
+            return;
+        }
+        DependencyNums::F32(_) => { panic!(); }
+    };
+}
 
 pub fn evaluator(
     r: Response,
@@ -299,8 +465,8 @@ pub fn evaluator(
     // if let Ok(cell) = db.get_cell_mut((r.target - 1001) as u32) { target = cell; }
 
     // TODO: Check and modify arg_type use
-    if (r.arg_type & 2 == 1 && !db.cell_in_range((r.arg1 - 1001) as u32))
-        || (r.arg_type & 1 == 1 && !db.cell_in_range((r.arg1 - 1001) as u32)) {
+    if (r.arg_type & 2 != 0 && !db.cell_in_range((r.arg1 - 1001) as u32))
+        || (r.arg_type & 1 != 0 && !db.cell_in_range((r.arg2 - 1001) as u32)) {
         return 4;
     }
 
@@ -309,8 +475,24 @@ pub fn evaluator(
     let mut old_error: bool = false;
     if let Err(val) = db.get((r.target - 1001) as u32) { old_error = val; }
     let old_dep = if let Ok(cell) = db.get_cell((r.target - 1001) as u32) { cell.get_dep() } else { None };
+    match old_dep {
+        Some(dep) => {
+            if dep.get_oper() <= 6 {
+                match dep.get_pre() {
+                    DependencyNums::U32(u) => db.rem_dep_point(u, (r.target - 1001) as u32),
+                    _ => {},
+                }
+                match dep.get_post() {
+                    DependencyNums::U32(u) => db.rem_dep_point(u, (r.target - 1001) as u32),
+                    _ => {},
+                }
+            } else {
+                db.rem_dep_range((r.target - 1001) as u32);
+            };
+        },
+        None => {},
+    };
     db.rem_cell_parent_dep((r.target - 1001) as u32);
-    db.rem_dep_dep_store((r.target - 1001) as u32);
 
     if r.func == 1 {
         let _ = db.set_int((r.target - 1001) as u32, r.arg1);
@@ -327,16 +509,19 @@ pub fn evaluator(
 
         if let Ok(cell_ref) = db.get_cell_mut((r.target - 1001) as u32) {
             cell_ref.modify_dep(dep_data);
-            db.add_dep_dep_store(DependencyObject::from_dep_data((r.target - 1001) as u32, dep_data));
+            db.add_dep_point((r.arg1 - 1001) as u32, (r.target - 1001) as u32);
+            // db.add_dep_range(DependencyObject::from_dep_data((r.target - 1001) as u32, dep_data));
         }
     }
 
+    // Binary relations: + - * /
     if r.func >= 3 && r.func <= 6 {
-        // Case when both arguments are integers
         let target;
         if let Ok(cell) = db.get_cell_mut((r.target - 1001) as u32) { target = cell }
         else { panic!() };
 
+        // Case when both arguments are integers
+        // This will not have any operator/ dependencies
         if (r.arg_type & 2) == 0 && (r.arg_type & 1) == 0 {
             let data = match r.func {
                 3 => r.arg1 + r.arg2,
@@ -357,7 +542,7 @@ pub fn evaluator(
         } else {
             let pre;
             // Argument 1 is cell or int
-            if (r.arg_type & 2) == 1 {
+            if (r.arg_type & 2) != 0 {
                 pre = DependencyNums::U32((r.arg1 - 1001) as u32);
             } else {
                 pre = DependencyNums::I32(r.arg1);
@@ -365,16 +550,24 @@ pub fn evaluator(
 
             let post;
             // Argument 2 is cell or int
-            if (r.arg_type & 1) == 1 {
-                post = DependencyNums::U32((r.arg1 - 1001) as u32);
+            if (r.arg_type & 1) != 0 {
+                post = DependencyNums::U32((r.arg2 - 1001) as u32);
             } else {
-                post = DependencyNums::I32(r.arg1);
+                post = DependencyNums::I32(r.arg2);
             }
 
             let dep_data = DependencyData::new(r.func as u8, pre, post);
 
             target.modify_dep(dep_data);
-            db.add_dep_dep_store(DependencyObject::from_dep_data((r.target - 1001) as u32, dep_data));
+            match (pre, post) {
+                (DependencyNums::U32(u1), DependencyNums::U32(u2)) => {
+                    db.add_dep_point(u1, (r.target - 1001) as u32);
+                    db.add_dep_point(u2, (r.target - 1001) as u32);
+                },
+                (DependencyNums::U32(u), _) => { db.add_dep_point(u, (r.target - 1001) as u32); },
+                (_, DependencyNums::U32(u)) => { db.add_dep_point(u, (r.target - 1001) as u32); },
+                (_, _) => {}
+            }
         }
     }
 
@@ -389,26 +582,27 @@ pub fn evaluator(
         let dep_data = DependencyData::new(r.func as u8, pre, post);
 
         target.modify_dep(dep_data);
-        db.add_dep_dep_store(DependencyObject::from_dep_data((r.target - 1001) as u32, dep_data));
+        db.add_dep_range(DependencyObject::from_dep_data((r.target - 1001) as u32, dep_data));
     }
 
+    // Command: sleep
     if r.func == 12 {
         let target;
         if let Ok(cell) = db.get_cell_mut((r.target - 1001) as u32) { target = cell }
         else { panic!("Target is not initialized, but should have been initialized. This only means one thing..., the world is about to end :(") };
 
         let pre;
-        if r.arg_type & 2 == 1 {
+        if r.arg_type & 2 != 0 {
             pre = DependencyNums::U32((r.arg1 - 1001) as u32);
         } else {
             pre = DependencyNums::I32(r.arg1);
         }
 
-        let post = DependencyNums::F32(0.0);
+        let post = DependencyNums::U32(0);
         let dep_data = DependencyData::new(r.func as u8, pre, post);
 
         target.modify_dep(dep_data);
-        db.add_dep_dep_store(DependencyObject::from_dep_data((r.target - 1001) as u32, dep_data));
+        db.add_dep_range(DependencyObject::from_dep_data((r.target - 1001) as u32, dep_data));
     }
 
     let topo_order;
@@ -421,7 +615,7 @@ pub fn evaluator(
         target.set_error(old_error);
         if let Some(dep) = old_dep {
             let _ = target.modify_dep(dep);
-            db.add_dep_dep_store(DependencyObject::from_dep_data((r.target - 1001) as u32, dep));
+            db.add_dep_range(DependencyObject::from_dep_data((r.target - 1001) as u32, dep));
         }
 
         return 3;

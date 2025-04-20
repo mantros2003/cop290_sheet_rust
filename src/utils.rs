@@ -28,7 +28,7 @@ fn dfs(db: &Database, node: u32, visited: &mut HashMap<u32, VisitState>, result:
 
     visited.insert(node, VisitState::Visiting);
 
-    for neighbor in db.get_cell_children(node).iter().map(|dep| dep.get_target()) {
+    for neighbor in db.get_cell_children(node) {
         if dfs(db, neighbor, visited, result) {
             return true; // propagate cycle
         }

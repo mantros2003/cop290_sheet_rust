@@ -1,0 +1,2 @@
+sheet:
+	cargo build --release

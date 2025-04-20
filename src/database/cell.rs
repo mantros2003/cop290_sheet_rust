@@ -1,3 +1,4 @@
+use std::ops::{Add, Sub, Mul, Div};
 use super::range::DependencyData;
 use std::mem;
 
@@ -21,6 +22,63 @@ impl std::fmt::Display for CellData {
         match self {
             CellData::IntData(i) => write!(f, "{}", i),
             CellData::FloatData(fl) => write!(f, "{:.2}", fl), // format to 2 decimal places
+        }
+    }
+}
+
+impl Add for CellData {
+    type Output = CellData;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        match (self, rhs) {
+            (CellData::IntData(a), CellData::IntData(b)) => CellData::IntData(a + b),
+            (CellData::IntData(a), CellData::FloatData(b)) => CellData::FloatData(a as f32 + b),
+            (CellData::FloatData(a), CellData::IntData(b)) => CellData::FloatData(a + b as f32),
+            (CellData::FloatData(a), CellData::FloatData(b)) => CellData::FloatData(a + b),
+        }
+    }
+}
+
+impl Sub for CellData {
+    type Output = CellData;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        match (self, rhs) {
+            (CellData::IntData(a), CellData::IntData(b)) => CellData::IntData(a - b),
+            (CellData::IntData(a), CellData::FloatData(b)) => CellData::FloatData(a as f32 - b),
+            (CellData::FloatData(a), CellData::IntData(b)) => CellData::FloatData(a - b as f32),
+            (CellData::FloatData(a), CellData::FloatData(b)) => CellData::FloatData(a - b),
+        }
+    }
+}
+
+impl Mul for CellData {
+    type Output = CellData;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        match (self, rhs) {
+            (CellData::IntData(a), CellData::IntData(b)) => CellData::IntData(a * b),
+            (CellData::IntData(a), CellData::FloatData(b)) => CellData::FloatData(a as f32 * b),
+            (CellData::FloatData(a), CellData::IntData(b)) => CellData::FloatData(a * b as f32),
+            (CellData::FloatData(a), CellData::FloatData(b)) => CellData::FloatData(a * b),
+        }
+    }
+}
+
+impl Div for CellData {
+    type Output = Result<CellData, ()>;
+
+    fn div(self, rhs: Self) -> Self::Output {
+        match (self, rhs) {
+            (CellData::IntData(_), CellData::IntData(0)) |
+            (CellData::IntData(_), CellData::FloatData(0.0)) => Err(()),
+            (CellData::FloatData(_), CellData::IntData(0)) |
+            (CellData::FloatData(_), CellData::FloatData(0.0)) => Err(()),
+
+            (CellData::IntData(a), CellData::IntData(b)) => Ok(CellData::IntData(a / b)),
+            (CellData::IntData(a), CellData::FloatData(b)) => Ok(CellData::FloatData(a as f32 / b)),
+            (CellData::FloatData(a), CellData::IntData(b)) => Ok(CellData::FloatData(a / b as f32)),
+            (CellData::FloatData(a), CellData::FloatData(b)) => Ok(CellData::FloatData(a / b)),
         }
     }
 }

@@ -17,7 +17,11 @@ const MAXROWS: u16 = 999;
 const MAXCOLS: u16 = 18278;
 const BUFFSZ: u16 = 256;
 
+const ERRMSG: [&str; 5] = ["ok", "parse error", "error", "cycle detected", "cells out of range"];
+
 fn main() {
+    env::set_var("RUST_BACKTRACE", "1");
+
     let args: Vec<String> = env::args().collect();
     let run_extension;
 
@@ -68,19 +72,21 @@ fn main() {
     let mut topleft: u32 = 0;
     let mut running: bool = true;
     let mut display_state: bool = true;
+    let mut ec: i32 = 0;
 
     if !run_extension {
         let mut duration: Duration = Duration::new(0, 0);
         while running {
             if display_state { print_spreadsheet(&db, topleft); }
-            print!("[{:.1}] (ok) > ", duration.as_millis() as f64 / 1000f64);
+            print!("[{:.1}] ({}) > ", duration.as_millis() as f64 / 1000f64, {ERRMSG[ec as usize]});
 
             let input = utils::get_ip(BUFFSZ as usize);
 
             let start = Instant::now();
 
             let r: Response = parser::parse(&input);
-            let ec: i32 = evaluator::evaluator(r, &mut db, &mut topleft, &mut running, &mut display_state);
+            //println!("{:?}", r);
+            ec = evaluator::evaluator(r, &mut db, &mut topleft, &mut running, &mut display_state);
 
             duration = start.elapsed();
 

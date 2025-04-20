@@ -5,3 +5,7 @@ edition = "2021"
 
 [dependencies]
 rstar = "0.10"
+
+[[bin]]
+name = "sheet"
+path = "src/main.rs"
