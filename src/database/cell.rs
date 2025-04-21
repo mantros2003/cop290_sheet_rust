@@ -17,6 +17,15 @@ pub struct Cell {
     dependencies: Option<DependencyData>,
 }
 
+impl CellData {
+    pub fn to_int(&self) -> CellData {
+        match self {
+            CellData::IntData(i) => { self.clone() },
+            CellData::FloatData(f) => { CellData::IntData(*f as i32)}
+        }
+    }
+}
+
 impl std::fmt::Display for CellData {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {

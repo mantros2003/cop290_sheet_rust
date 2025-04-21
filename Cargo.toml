@@ -5,6 +5,8 @@ edition = "2021"
 
 [dependencies]
 rstar = "0.10"
+ratatui = "0.26"
+crossterm = "0.27"
 
 [[bin]]
 name = "sheet"

@@ -3,6 +3,7 @@ mod parser;
 mod evaluator;
 mod display;
 mod utils;
+mod extensions;
 
 use database::Database;
 use display::print_spreadsheet;
@@ -28,7 +29,7 @@ fn main() {
     if args.len() == 4 {
         if args[3] == "--extension" { run_extension = true; }
         else {
-            println!("Invalid flag {}", args[3]);
+            println!("Invalid flag \"{}\"", args[3]);
             process::exit(1);
         }
     } else if args.len() == 3 { run_extension = false; }
@@ -92,5 +93,7 @@ fn main() {
 
             if ec == -1 { continue };
         }
-    } else {}
+    } else {
+        extensions::run_tui(db);
+    }
 }
