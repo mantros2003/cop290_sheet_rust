@@ -6,7 +6,7 @@ const CELL_WIDTH: u32 = 12;
 const MAX_ROWS: u32 = 10;
 const MAX_COLS: u32 = 10;
 
-fn generate_column_label(mut col_index: u32) -> String {
+pub fn generate_column_label(mut col_index: u32) -> String {
     let mut label = String::new();
     while col_index >= 0 {
         label.push(((col_index % 26) as u8 + b'A') as char);

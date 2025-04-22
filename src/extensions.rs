@@ -25,7 +25,7 @@ pub fn run_tui(db: Database) -> std::io::Result<()> {
     let mut app = App::new(db);
 
     loop {
-        terminal.draw(|f| render::<CrosstermBackend<Stdout>>(f, &app))?;
+        terminal.draw(|f| render::<CrosstermBackend<Stdout>>(f, &mut app))?;
         if let Some(cmd) = handle_input(&mut app)? {
             match cmd {
                 AppCommand::Exit => break,
