@@ -48,7 +48,11 @@ pub fn print_spreadsheet(db: &Database, top_left_cell: u32) {
             let r = top_left_row + i;
             let c = top_left_col + j;
             match db.get(1000 * c + r) {
-                Ok(&ref d) => print!("{:>width$}", d.to_int().to_string(), width = CELL_WIDTH as usize),
+                Ok(&ref d) => print!(
+                    "{:>width$}",
+                    d.to_int().to_string(),
+                    width = CELL_WIDTH as usize
+                ),
                 Err(true) => print!("{:>width$}", "ERR", width = CELL_WIDTH as usize),
                 Err(false) => process::exit(1),
             }

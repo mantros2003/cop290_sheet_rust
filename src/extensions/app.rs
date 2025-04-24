@@ -7,24 +7,36 @@ pub enum AppCommand {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Mode {
+pub enum Mode<'a> {
     Normal,
     NormalCommand,
     Insert,
+    Select(usize, usize),
+    ErrMsg(&'a str),
+    Graph((usize, usize), (usize, usize))
 }
 
-pub struct App {
-    pub mode: Mode,
+pub struct App<'a> {
+    pub mode: Mode<'a>,
     pub input_buffer: String,
     pub db: Database,
+    pub file_name: String,
     pub topleft: (usize, usize),
     pub selected: (usize, usize),
-    pub dissz: (usize, usize)
+    pub dissz: (usize, usize),
 }
 
-impl App {
+impl<'a> App<'a> {
     pub fn new(db: Database) -> Self {
-        Self { db, topleft: (0, 0), selected: (0, 0), mode: Mode::Normal, input_buffer: String::new(), dissz: (0, 0) }
+        Self {
+            db,
+            file_name: String::new(),
+            topleft: (0, 0),
+            selected: (0, 0),
+            mode: Mode::Normal,
+            input_buffer: String::new(),
+            dissz: (0, 0),
+        }
     }
 
     // Assume num_rows and num_cols are part of your App struct
@@ -68,15 +80,12 @@ impl App {
         self.dissz = sz;
     }
 
-
     pub fn get_value(&self, row: usize, col: usize) -> String {
         let id = (1000 * col + row) as u32;
         match self.db.get_cell(id) {
-            Ok(&c) => {
-                match c.get_data() {
-                    Ok(data) => data.to_string(),
-                    Err(()) => "ERR".to_string()
-                }
+            Ok(&c) => match c.get_data() {
+                Ok(data) => data.to_string(),
+                Err(()) => "ERR".to_string(),
             },
             Err(true) => "0".to_string(),
             Err(false) => panic!("cell out of range"),

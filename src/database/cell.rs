@@ -1,6 +1,6 @@
-use std::ops::{Add, Sub, Mul, Div};
 use super::range::DependencyData;
 use std::mem;
+use std::ops::{Add, Div, Mul, Sub};
 
 /// Enum for different types of data that a spreadsheet cell can store
 #[derive(Debug, Clone, Copy)]
@@ -20,8 +20,8 @@ pub struct Cell {
 impl CellData {
     pub fn to_int(&self) -> CellData {
         match self {
-            CellData::IntData(i) => { self.clone() },
-            CellData::FloatData(f) => { CellData::IntData(*f as i32)}
+            CellData::IntData(i) => self.clone(),
+            CellData::FloatData(f) => CellData::IntData(*f as i32),
         }
     }
 }
@@ -79,10 +79,10 @@ impl Div for CellData {
 
     fn div(self, rhs: Self) -> Self::Output {
         match (self, rhs) {
-            (CellData::IntData(_), CellData::IntData(0)) |
-            (CellData::IntData(_), CellData::FloatData(0.0)) => Err(()),
-            (CellData::FloatData(_), CellData::IntData(0)) |
-            (CellData::FloatData(_), CellData::FloatData(0.0)) => Err(()),
+            (CellData::IntData(_), CellData::IntData(0))
+            | (CellData::IntData(_), CellData::FloatData(0.0)) => Err(()),
+            (CellData::FloatData(_), CellData::IntData(0))
+            | (CellData::FloatData(_), CellData::FloatData(0.0)) => Err(()),
 
             (CellData::IntData(a), CellData::IntData(b)) => Ok(CellData::IntData(a / b)),
             (CellData::IntData(a), CellData::FloatData(b)) => Ok(CellData::FloatData(a as f32 / b)),
@@ -98,7 +98,7 @@ impl Cell {
         Cell {
             data: CellData::IntData(data),
             error: false,
-            dependencies: None
+            dependencies: None,
         }
     }
 
@@ -107,7 +107,7 @@ impl Cell {
         Cell {
             data: CellData::FloatData(data),
             error: false,
-            dependencies: None
+            dependencies: None,
         }
     }
 
@@ -127,22 +127,34 @@ impl Cell {
 
     /// Get data from the cell
     pub fn get_data(&self) -> Result<&CellData, ()> {
-        if self.has_error() { Err(()) }
-        else { Ok(&self.data) }
+        if self.has_error() {
+            Err(())
+        } else {
+            Ok(&self.data)
+        }
     }
 
     /// Sets the error value of a cell
-    pub fn set_error(&mut self, err: bool) -> () { self.error = err; }
-
-    /// Checks if the cell has error
-    pub fn has_error(&self) -> bool { self.error }
-
-    pub fn has_dep(&self) -> bool {
-        if let None = self.dependencies { false }
-        else { true }
+    pub fn set_error(&mut self, err: bool) -> () {
+        self.error = err;
     }
 
-    pub fn get_dep(&self) -> Option<DependencyData> { self.dependencies }
+    /// Checks if the cell has error
+    pub fn has_error(&self) -> bool {
+        self.error
+    }
+
+    pub fn has_dep(&self) -> bool {
+        if let None = self.dependencies {
+            false
+        } else {
+            true
+        }
+    }
+
+    pub fn get_dep(&self) -> Option<DependencyData> {
+        self.dependencies
+    }
 
     pub fn modify_dep(&mut self, dep: DependencyData) -> Option<DependencyData> {
         match self.dependencies.as_mut() {
@@ -150,11 +162,11 @@ impl Cell {
                 self.dependencies = Some(dep);
                 None
             }
-            Some(_ret) => {
-                mem::replace(&mut self.dependencies, Some(dep))
-            }
+            Some(_ret) => mem::replace(&mut self.dependencies, Some(dep)),
         }
     }
 
-    pub fn rem_dep(&mut self) { self.dependencies = None; }
+    pub fn rem_dep(&mut self) {
+        self.dependencies = None;
+    }
 }

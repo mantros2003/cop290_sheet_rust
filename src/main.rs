@@ -1,9 +1,9 @@
 mod database;
-mod parser;
-mod evaluator;
 mod display;
-mod utils;
+mod evaluator;
 mod extensions;
+mod parser;
+mod utils;
 
 use database::Database;
 use display::print_spreadsheet;
@@ -18,7 +18,13 @@ const MAXROWS: u16 = 999;
 const MAXCOLS: u16 = 18278;
 const BUFFSZ: u16 = 256;
 
-const ERRMSG: [&str; 5] = ["ok", "parse error", "error", "cycle detected", "cells out of range"];
+const ERRMSG: [&str; 5] = [
+    "ok",
+    "parse error",
+    "error",
+    "cycle detected",
+    "cells out of range",
+];
 
 fn main() {
     env::set_var("RUST_BACKTRACE", "1");
@@ -27,13 +33,15 @@ fn main() {
     let run_extension;
 
     if args.len() == 4 {
-        if args[3] == "--extension" { run_extension = true; }
-        else {
+        if args[3] == "--extension" {
+            run_extension = true;
+        } else {
             println!("Invalid flag \"{}\"", args[3]);
             process::exit(1);
         }
-    } else if args.len() == 3 { run_extension = false; }
-    else {
+    } else if args.len() == 3 {
+        run_extension = false;
+    } else {
         println!("Either 2 or 3 arguments required");
         process::exit(1);
     }
@@ -78,8 +86,12 @@ fn main() {
     if !run_extension {
         let mut duration: Duration = Duration::new(0, 0);
         while running {
-            if display_state { print_spreadsheet(&db, topleft); }
-            print!("[{:.1}] ({}) > ", duration.as_millis() as f64 / 1000f64, {ERRMSG[ec as usize]});
+            if display_state {
+                print_spreadsheet(&db, topleft);
+            }
+            print!("[{:.1}] ({}) > ", duration.as_millis() as f64 / 1000f64, {
+                ERRMSG[ec as usize]
+            });
 
             let input = utils::get_ip(BUFFSZ as usize);
 
@@ -91,9 +103,11 @@ fn main() {
 
             duration = start.elapsed();
 
-            if ec == -1 { continue };
+            if ec == -1 {
+                continue;
+            };
         }
     } else {
-        extensions::run_tui(db);
+        let _ = extensions::run_tui(db);
     }
 }

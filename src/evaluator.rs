@@ -1,24 +1,32 @@
-use core::{f32, panic};
-use std::thread::sleep;
 use crate::database::cell::{Cell, CellData};
 use crate::database::range::{DependencyData, DependencyNums, DependencyObject};
-use crate::parser::Response;
 use crate::database::Database;
+use crate::parser::Response;
 use crate::utils;
+use core::{f32, panic};
+use std::thread::sleep;
 
 fn evaluate(db: &mut Database, cell_idx: u32) {
     let target;
-    if let Ok(cell) = db.get_cell_mut(cell_idx) { target = cell }
-    else { panic!() };
+    if let Ok(cell) = db.get_cell_mut(cell_idx) {
+        target = cell
+    } else {
+        panic!()
+    };
 
-    if !target.has_dep() { return; }
+    if !target.has_dep() {
+        return;
+    }
 
     let dep;
-    if let Some(dep_obj) = target.get_dep() { dep = dep_obj; }
-    else { panic!(); }
+    if let Some(dep_obj) = target.get_dep() {
+        dep = dep_obj;
+    } else {
+        panic!();
+    }
 
     //println!("{dep:?}");
-    
+
     //let _ = drop(target);
 
     if dep.get_oper() == 2 {
@@ -29,22 +37,33 @@ fn evaluate(db: &mut Database, cell_idx: u32) {
         match db.get_cell_clone({
             match dep.get_pre() {
                 DependencyNums::U32(idx) => idx,
-                _ => panic!()
+                _ => panic!(),
             }
         }) {
-            Ok(cell) => { parent = cell; }
-            Err(true) => { parent = Cell::new_i(0); }
-            _ => { panic!(); }
+            Ok(cell) => {
+                parent = cell;
+            }
+            Err(true) => {
+                parent = Cell::new_i(0);
+            }
+            _ => {
+                panic!();
+            }
         }
 
         let target;
-        if let Ok(cell) = db.get_cell_mut(cell_idx) { target = cell }
-        else { panic!() };
+        if let Ok(cell) = db.get_cell_mut(cell_idx) {
+            target = cell
+        } else {
+            panic!()
+        };
 
         if let Ok(data) = parent.get_data() {
             target.set_data(data.clone());
             target.set_error(false);
-        } else { target.set_error(true); }
+        } else {
+            target.set_error(true);
+        }
     }
 
     if dep.get_oper() >= 3 && dep.get_oper() <= 6 {
@@ -52,32 +71,51 @@ fn evaluate(db: &mut Database, cell_idx: u32) {
         let post;
 
         match dep.get_pre() {
-            DependencyNums::U32(idx) => {
-                match db.get_cell_clone(idx) {
-                    Ok(cell) => { pre = cell; }
-                    Err(true) => { pre = Cell::new_i(0); }
-                    _ => { panic!(); }
+            DependencyNums::U32(idx) => match db.get_cell_clone(idx) {
+                Ok(cell) => {
+                    pre = cell;
+                }
+                Err(true) => {
+                    pre = Cell::new_i(0);
+                }
+                _ => {
+                    panic!();
                 }
             },
-            DependencyNums::I32(i) => { pre = Cell::new_i(i); }
-            DependencyNums::F32(f) => { pre = Cell::new_f(f); }
+            DependencyNums::I32(i) => {
+                pre = Cell::new_i(i);
+            }
+            DependencyNums::F32(f) => {
+                pre = Cell::new_f(f);
+            }
         }
 
         match dep.get_post() {
-            DependencyNums::U32(idx) => {
-                match db.get_cell_clone(idx) {
-                    Ok(cell) => { post = cell; }
-                    Err(true) => { post = Cell::new_i(0); }
-                    _ => { panic!(); }
+            DependencyNums::U32(idx) => match db.get_cell_clone(idx) {
+                Ok(cell) => {
+                    post = cell;
+                }
+                Err(true) => {
+                    post = Cell::new_i(0);
+                }
+                _ => {
+                    panic!();
                 }
             },
-            DependencyNums::I32(i) => { post = Cell::new_i(i); }
-            DependencyNums::F32(f) => { post = Cell::new_f(f); }
+            DependencyNums::I32(i) => {
+                post = Cell::new_i(i);
+            }
+            DependencyNums::F32(f) => {
+                post = Cell::new_f(f);
+            }
         }
 
         let target;
-        if let Ok(cell) = db.get_cell_mut(cell_idx) { target = cell }
-        else { panic!() };
+        if let Ok(cell) = db.get_cell_mut(cell_idx) {
+            target = cell
+        } else {
+            panic!()
+        };
 
         if pre.has_error() || post.has_error() {
             target.set_error(true);
@@ -88,24 +126,36 @@ fn evaluate(db: &mut Database, cell_idx: u32) {
         let pre_data;
         let post_data;
 
-        if let Ok(&data) = pre.get_data() { pre_data = data; }
-        else { panic!(); }
+        if let Ok(&data) = pre.get_data() {
+            pre_data = data;
+        } else {
+            panic!();
+        }
 
-        if let Ok(&data) = post.get_data() { post_data = data; }
-        else { panic!(); }
+        if let Ok(&data) = post.get_data() {
+            post_data = data;
+        } else {
+            panic!();
+        }
 
         match dep.get_oper() {
-            3 => { target.set_data(pre_data + post_data); }
-            4 => { target.set_data(pre_data - post_data); }
-            5 => { target.set_data(pre_data * post_data); }
-            6 => {
-                match pre_data / post_data {
-                    Ok(data) => { target.set_data(data); },
-                    Err(_) => {
-                        target.set_error(true);
-                    }
-                }
+            3 => {
+                target.set_data(pre_data + post_data);
             }
+            4 => {
+                target.set_data(pre_data - post_data);
+            }
+            5 => {
+                target.set_data(pre_data * post_data);
+            }
+            6 => match pre_data / post_data {
+                Ok(data) => {
+                    target.set_data(data);
+                }
+                Err(_) => {
+                    target.set_error(true);
+                }
+            },
             _ => {}
         }
     }
@@ -132,9 +182,13 @@ fn min_fn(db: &mut Database, cell_idx: u32) {
                 pre = pred;
                 post = posd;
             }
-            (_, _) => { panic!(); }
+            (_, _) => {
+                panic!();
+            }
         }
-    } else { panic!(); }
+    } else {
+        panic!();
+    }
 
     let row_low = pre % 1000;
     let row_high = post % 1000;
@@ -146,21 +200,24 @@ fn min_fn(db: &mut Database, cell_idx: u32) {
             let data;
             let _data = db.get(1000 * col + row);
             data = match _data {
-                Ok(d) => {
-                    match d {
-                        CellData::IntData(i) => {*i as f32},
-                        CellData::FloatData(f) => {*f},
-                    }
-                }
+                Ok(d) => match d {
+                    CellData::IntData(i) => *i as f32,
+                    CellData::FloatData(f) => *f,
+                },
                 Err(true) => {
                     let target;
-                    if let Ok(cell) = db.get_cell_mut(cell_idx) { target = cell }
-                    else { panic!() };
+                    if let Ok(cell) = db.get_cell_mut(cell_idx) {
+                        target = cell
+                    } else {
+                        panic!()
+                    };
 
                     target.set_error(true);
                     return;
                 }
-                Err(false) => { panic!(); }
+                Err(false) => {
+                    panic!();
+                }
             };
 
             min_val = if data < min_val { data } else { min_val };
@@ -168,8 +225,11 @@ fn min_fn(db: &mut Database, cell_idx: u32) {
     }
 
     let target;
-    if let Ok(cell) = db.get_cell_mut(cell_idx) { target = cell }
-    else { panic!() };
+    if let Ok(cell) = db.get_cell_mut(cell_idx) {
+        target = cell
+    } else {
+        panic!()
+    };
 
     target.set_data_f(min_val);
 }
@@ -185,9 +245,13 @@ fn max_fn(db: &mut Database, cell_idx: u32) {
                 pre = pred;
                 post = posd;
             }
-            (_, _) => { panic!(); }
+            (_, _) => {
+                panic!();
+            }
         }
-    } else { panic!(); }
+    } else {
+        panic!();
+    }
 
     let row_low = pre % 1000;
     let row_high = post % 1000;
@@ -199,21 +263,24 @@ fn max_fn(db: &mut Database, cell_idx: u32) {
             let data;
             let _data = db.get(1000 * col + row);
             data = match _data {
-                Ok(d) => {
-                    match d {
-                        CellData::IntData(i) => {*i as f32},
-                        CellData::FloatData(f) => {*f},
-                    }
-                }
+                Ok(d) => match d {
+                    CellData::IntData(i) => *i as f32,
+                    CellData::FloatData(f) => *f,
+                },
                 Err(true) => {
                     let target;
-                    if let Ok(cell) = db.get_cell_mut(cell_idx) { target = cell }
-                    else { panic!() };
+                    if let Ok(cell) = db.get_cell_mut(cell_idx) {
+                        target = cell
+                    } else {
+                        panic!()
+                    };
 
                     target.set_error(true);
                     return;
                 }
-                Err(false) => { panic!(); }
+                Err(false) => {
+                    panic!();
+                }
             };
 
             max_val = if data > max_val { data } else { max_val };
@@ -221,8 +288,11 @@ fn max_fn(db: &mut Database, cell_idx: u32) {
     }
 
     let target;
-    if let Ok(cell) = db.get_cell_mut(cell_idx) { target = cell }
-    else { panic!() };
+    if let Ok(cell) = db.get_cell_mut(cell_idx) {
+        target = cell
+    } else {
+        panic!()
+    };
 
     target.set_data_f(max_val);
 }
@@ -233,11 +303,15 @@ fn avg_fn(db: &mut Database, cell_idx: u32) {
     let mut avg;
     avg = match db.get(cell_idx) {
         Ok(data) => match data {
-            CellData::FloatData(f) => { *f },
-            CellData::IntData(i) => { *i as f32 },
+            CellData::FloatData(f) => *f,
+            CellData::IntData(i) => *i as f32,
         },
-        Err(true) => { return; }
-        Err(false) => { panic!(); }
+        Err(true) => {
+            return;
+        }
+        Err(false) => {
+            panic!();
+        }
     };
 
     let pre;
@@ -248,9 +322,13 @@ fn avg_fn(db: &mut Database, cell_idx: u32) {
                 pre = pred;
                 post = posd;
             }
-            (_, _) => { panic!(); }
+            (_, _) => {
+                panic!();
+            }
         }
-    } else { panic!(); }
+    } else {
+        panic!();
+    }
 
     let row_low = pre % 1000;
     let row_high = post % 1000;
@@ -260,8 +338,11 @@ fn avg_fn(db: &mut Database, cell_idx: u32) {
     avg /= ((row_high - row_low + 1) * (col_high - col_low + 1)) as f32;
 
     let target;
-    if let Ok(cell) = db.get_cell_mut(cell_idx) { target = cell }
-    else { panic!() };
+    if let Ok(cell) = db.get_cell_mut(cell_idx) {
+        target = cell
+    } else {
+        panic!()
+    };
 
     target.set_data_f(avg);
 }
@@ -277,9 +358,13 @@ fn sum_fn(db: &mut Database, cell_idx: u32) {
                 pre = pred;
                 post = posd;
             }
-            (_, _) => { panic!(); }
+            (_, _) => {
+                panic!();
+            }
         }
-    } else { panic!(); }
+    } else {
+        panic!();
+    }
 
     let row_low = pre % 1000;
     let row_high = post % 1000;
@@ -291,21 +376,24 @@ fn sum_fn(db: &mut Database, cell_idx: u32) {
             let data;
             let _data = db.get(1000 * col + row);
             data = match _data {
-                Ok(d) => {
-                    match d {
-                        CellData::IntData(i) => {*i as f32},
-                        CellData::FloatData(f) => {*f},
-                    }
-                }
+                Ok(d) => match d {
+                    CellData::IntData(i) => *i as f32,
+                    CellData::FloatData(f) => *f,
+                },
                 Err(true) => {
                     let target;
-                    if let Ok(cell) = db.get_cell_mut(cell_idx) { target = cell }
-                    else { panic!() };
+                    if let Ok(cell) = db.get_cell_mut(cell_idx) {
+                        target = cell
+                    } else {
+                        panic!()
+                    };
 
                     target.set_error(true);
                     return;
                 }
-                Err(false) => { panic!(); }
+                Err(false) => {
+                    panic!();
+                }
             };
 
             sum += data;
@@ -313,8 +401,11 @@ fn sum_fn(db: &mut Database, cell_idx: u32) {
     }
 
     let target;
-    if let Ok(cell) = db.get_cell_mut(cell_idx) { target = cell }
-    else { panic!() };
+    if let Ok(cell) = db.get_cell_mut(cell_idx) {
+        target = cell
+    } else {
+        panic!()
+    };
 
     target.set_data_f(sum);
 }
@@ -325,49 +416,61 @@ fn sleep_fn(db: &mut Database, cell_idx: u32) {
     let dep = db.get_cell_parent_dep(cell_idx);
 
     let dep = match dep {
-        Some(dep) => { dep },
-        None => { panic!(); },
+        Some(dep) => dep,
+        None => {
+            panic!();
+        }
     };
 
     let pre = dep.get_pre();
 
     match pre {
-        DependencyNums::U32(u) => {
-            match db.get_cell_clone(u) {
-                Ok(parent) => {
-                    let target;
-                    if let Ok(cell) = db.get_cell_mut(cell_idx) { target = cell }
-                    else { panic!() };
+        DependencyNums::U32(u) => match db.get_cell_clone(u) {
+            Ok(parent) => {
+                let target;
+                if let Ok(cell) = db.get_cell_mut(cell_idx) {
+                    target = cell
+                } else {
+                    panic!()
+                };
 
-                    match parent.get_data() {
-                        Ok(d) => {
-                            match d {
-                                CellData::IntData(i) => {
-                                    if *i >= 0 { sleep(std::time::Duration::from_secs(*i as u64)); }
-                                }
-                                CellData::FloatData(f) => {
-                                    if *f >= 0.0 { sleep(std::time::Duration::from_secs_f32(*f)); }
+                match parent.get_data() {
+                    Ok(d) => {
+                        match d {
+                            CellData::IntData(i) => {
+                                if *i >= 0 {
+                                    sleep(std::time::Duration::from_secs(*i as u64));
                                 }
                             }
-                            target.set_data(*d);
-                            target.set_error(false);
-                            return;
+                            CellData::FloatData(f) => {
+                                if *f >= 0.0 {
+                                    sleep(std::time::Duration::from_secs_f32(*f));
+                                }
+                            }
                         }
-                        Err(()) => {
-                            target.set_error(true);
-                            return;
-                        }
+                        target.set_data(*d);
+                        target.set_error(false);
+                        return;
                     }
-                },
-                Err(false) => { panic!(); },
-                Err(true) => {
-                    let target;
-                    if let Ok(cell) = db.get_cell_mut(cell_idx) { target = cell }
-                    else { panic!() };
-                    target.set_data_i(0);
-                    target.set_error(false);
-                    return;
+                    Err(()) => {
+                        target.set_error(true);
+                        return;
+                    }
                 }
+            }
+            Err(false) => {
+                panic!();
+            }
+            Err(true) => {
+                let target;
+                if let Ok(cell) = db.get_cell_mut(cell_idx) {
+                    target = cell
+                } else {
+                    panic!()
+                };
+                target.set_data_i(0);
+                target.set_error(false);
+                return;
             }
         },
         DependencyNums::I32(i) => {
@@ -375,14 +478,19 @@ fn sleep_fn(db: &mut Database, cell_idx: u32) {
             sleep(std::time::Duration::from_secs(time));
 
             let target;
-            if let Ok(cell) = db.get_cell_mut(cell_idx) { target = cell }
-            else { panic!() };
+            if let Ok(cell) = db.get_cell_mut(cell_idx) {
+                target = cell
+            } else {
+                panic!()
+            };
             target.set_data_i(i);
             target.set_error(false);
 
             return;
         }
-        DependencyNums::F32(_) => { panic!(); }
+        DependencyNums::F32(_) => {
+            panic!();
+        }
     };
 }
 
@@ -425,7 +533,11 @@ pub fn evaluator(
         13 => row = if row as i32 - 10 < 0 { 0 } else { row - 10 },
         14 => {
             col = if col + 20 > db.num_cols as u32 {
-                if db.num_cols as i32 - 10 < 0 { 0 } else { db.num_cols as u32 - 10 }
+                if db.num_cols as i32 - 10 < 0 {
+                    0
+                } else {
+                    db.num_cols as u32 - 10
+                }
             } else {
                 col + 10
             };
@@ -433,7 +545,11 @@ pub fn evaluator(
         15 => col = if row as i32 - 10 < 0 { 0 } else { col - 10 },
         16 => {
             row = if row + 20 > db.num_rows as u32 {
-                if db.num_rows as i32 - 10 < 0 { 0 } else { db.num_rows as u32 - 10 }
+                if db.num_rows as i32 - 10 < 0 {
+                    0
+                } else {
+                    db.num_rows as u32 - 10
+                }
             } else {
                 row + 10
             };
@@ -447,7 +563,9 @@ pub fn evaluator(
         return 0;
     }
 
-    if !db.cell_in_range((r.target - 1001) as u32) { return 4; }
+    if !db.cell_in_range((r.target - 1001) as u32) {
+        return 4;
+    }
 
     // Command: scroll_to
     if r.func == 20 {
@@ -466,31 +584,38 @@ pub fn evaluator(
 
     // TODO: Check and modify arg_type use
     if (r.arg_type & 2 != 0 && !db.cell_in_range((r.arg1 - 1001) as u32))
-        || (r.arg_type & 1 != 0 && !db.cell_in_range((r.arg2 - 1001) as u32)) {
+        || (r.arg_type & 1 != 0 && !db.cell_in_range((r.arg2 - 1001) as u32))
+    {
         return 4;
     }
 
     // Capture state of the cell before modification
     // Then remove the old dependencies
     let mut old_error: bool = false;
-    if let Err(val) = db.get((r.target - 1001) as u32) { old_error = val; }
-    let old_dep = if let Ok(cell) = db.get_cell((r.target - 1001) as u32) { cell.get_dep() } else { None };
+    if let Err(val) = db.get((r.target - 1001) as u32) {
+        old_error = val;
+    }
+    let old_dep = if let Ok(cell) = db.get_cell((r.target - 1001) as u32) {
+        cell.get_dep()
+    } else {
+        None
+    };
     match old_dep {
         Some(dep) => {
             if dep.get_oper() <= 6 {
                 match dep.get_pre() {
                     DependencyNums::U32(u) => db.rem_dep_point(u, (r.target - 1001) as u32),
-                    _ => {},
+                    _ => {}
                 }
                 match dep.get_post() {
                     DependencyNums::U32(u) => db.rem_dep_point(u, (r.target - 1001) as u32),
-                    _ => {},
+                    _ => {}
                 }
             } else {
                 db.rem_dep_range((r.target - 1001) as u32);
             };
-        },
-        None => {},
+        }
+        None => {}
     };
     db.rem_cell_parent_dep((r.target - 1001) as u32);
 
@@ -517,8 +642,11 @@ pub fn evaluator(
     // Binary relations: + - * /
     if r.func >= 3 && r.func <= 6 {
         let target;
-        if let Ok(cell) = db.get_cell_mut((r.target - 1001) as u32) { target = cell }
-        else { panic!() };
+        if let Ok(cell) = db.get_cell_mut((r.target - 1001) as u32) {
+            target = cell
+        } else {
+            panic!()
+        };
 
         // Case when both arguments are integers
         // This will not have any operator/ dependencies
@@ -535,7 +663,9 @@ pub fn evaluator(
                         r.arg1 / r.arg2
                     }
                 }
-                _ => {panic!()}
+                _ => {
+                    panic!()
+                }
             };
 
             target.set_data_i(data);
@@ -563,9 +693,13 @@ pub fn evaluator(
                 (DependencyNums::U32(u1), DependencyNums::U32(u2)) => {
                     db.add_dep_point(u1, (r.target - 1001) as u32);
                     db.add_dep_point(u2, (r.target - 1001) as u32);
-                },
-                (DependencyNums::U32(u), _) => { db.add_dep_point(u, (r.target - 1001) as u32); },
-                (_, DependencyNums::U32(u)) => { db.add_dep_point(u, (r.target - 1001) as u32); },
+                }
+                (DependencyNums::U32(u), _) => {
+                    db.add_dep_point(u, (r.target - 1001) as u32);
+                }
+                (_, DependencyNums::U32(u)) => {
+                    db.add_dep_point(u, (r.target - 1001) as u32);
+                }
                 (_, _) => {}
             }
         }
@@ -574,22 +708,31 @@ pub fn evaluator(
     // MIN, MAX, SUM, AVG, STDEV
     if r.func >= 7 && r.func <= 11 {
         let target;
-        if let Ok(cell) = db.get_cell_mut((r.target - 1001) as u32) { target = cell }
-        else { panic!("Target is not initialized, but should have been initialized. This only means one thing..., the world is about to end :(") };
+        if let Ok(cell) = db.get_cell_mut((r.target - 1001) as u32) {
+            target = cell
+        } else {
+            panic!("Target is not initialized, but should have been initialized. This only means one thing..., the world is about to end :(")
+        };
 
         let pre = DependencyNums::U32((r.arg1 - 1001) as u32);
         let post = DependencyNums::U32((r.arg2 - 1001) as u32);
         let dep_data = DependencyData::new(r.func as u8, pre, post);
 
         target.modify_dep(dep_data);
-        db.add_dep_range(DependencyObject::from_dep_data((r.target - 1001) as u32, dep_data));
+        db.add_dep_range(DependencyObject::from_dep_data(
+            (r.target - 1001) as u32,
+            dep_data,
+        ));
     }
 
     // Command: sleep
     if r.func == 12 {
         let target;
-        if let Ok(cell) = db.get_cell_mut((r.target - 1001) as u32) { target = cell }
-        else { panic!("Target is not initialized, but should have been initialized. This only means one thing..., the world is about to end :(") };
+        if let Ok(cell) = db.get_cell_mut((r.target - 1001) as u32) {
+            target = cell
+        } else {
+            panic!("Target is not initialized, but should have been initialized. This only means one thing..., the world is about to end :(")
+        };
 
         let pre;
         if r.arg_type & 2 != 0 {
@@ -602,20 +745,41 @@ pub fn evaluator(
         let dep_data = DependencyData::new(r.func as u8, pre, post);
 
         target.modify_dep(dep_data);
-        db.add_dep_range(DependencyObject::from_dep_data((r.target - 1001) as u32, dep_data));
+        db.add_dep_range(DependencyObject::from_dep_data(
+            (r.target - 1001) as u32,
+            dep_data,
+        ));
     }
 
     let topo_order;
-    if let Ok(vec) = utils::topological_sort(db, (r.target - 1001) as u32) { topo_order = vec; }
-    else {
+    if let Ok(vec) = utils::topological_sort(db, (r.target - 1001) as u32) {
+        topo_order = vec;
+    } else {
         let target;
-        if let Ok(cell) = db.get_cell_mut((r.target - 1001) as u32) { target = cell }
-        else { panic!("Target is not initialized, but should have been initialized. This only means one thing..., the world is about to end :(") };
+        if let Ok(cell) = db.get_cell_mut((r.target - 1001) as u32) {
+            target = cell
+        } else {
+            panic!("Target is not initialized, but should have been initialized. This only means one thing..., the world is about to end :(")
+        };
 
         target.set_error(old_error);
         if let Some(dep) = old_dep {
             let _ = target.modify_dep(dep);
-            db.add_dep_range(DependencyObject::from_dep_data((r.target - 1001) as u32, dep));
+            if (2..=6).contains(&dep.get_oper()) {
+                match dep.get_pre() {
+                    DependencyNums::U32(u) => {},
+                    _ => {}
+                }
+                db.add_dep_range(DependencyObject::from_dep_data(
+                    (r.target - 1001) as u32,
+                    dep,
+                ))
+            } else {
+                db.add_dep_range(DependencyObject::from_dep_data(
+                    (r.target - 1001) as u32,
+                    dep,
+                ))
+            };
         }
 
         return 3;

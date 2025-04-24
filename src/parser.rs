@@ -12,10 +12,8 @@ fn ib(integer: i32) -> bool {
     if integer == 0 {
         return false;
     }
-    return true ;
+    return true;
 }
-
-
 
 fn valid_row(s: &str) -> bool {
     let len = s.len();
@@ -67,7 +65,6 @@ fn valid_column(s: &str) -> bool {
     true
 }
 
-
 fn valid_column2(s: &str) -> i32 {
     let len = s.len();
 
@@ -85,7 +82,6 @@ fn valid_column2(s: &str) -> i32 {
 
     ans
 }
-
 
 fn valid_integer(s: &str) -> bool {
     let len = s.len();
@@ -115,8 +111,6 @@ fn valid_integer(s: &str) -> bool {
     }
 }
 
-
-
 fn valid_cell(s: &str) -> (bool, Option<(String, String)>) {
     let len = s.len();
     if len < 2 || len > 6 {
@@ -125,7 +119,6 @@ fn valid_cell(s: &str) -> (bool, Option<(String, String)>) {
 
     let bytes = s.as_bytes();
     let mut idx = 0;
-
 
     while idx < len {
         if bytes[idx].is_ascii_digit() {
@@ -146,8 +139,6 @@ fn valid_cell(s: &str) -> (bool, Option<(String, String)>) {
     (false, None)
 }
 
-
-
 fn valid_cell3(s: &str) -> i32 {
     let len = s.len();
     if len < 2 || len > 6 {
@@ -156,7 +147,6 @@ fn valid_cell3(s: &str) -> i32 {
 
     let mut idx = 0;
 
-  
     while idx < len {
         if s.as_bytes()[idx].is_ascii_digit() {
             break;
@@ -165,7 +155,6 @@ fn valid_cell3(s: &str) -> i32 {
     }
 
     if idx > 0 && idx < len {
-      
         if len - idx > 3 && idx >= 4 {
             return 0;
         }
@@ -210,9 +199,8 @@ fn valid_comp(r1: &str, r2: &str, s1: &str, s2: &str) -> bool {
             return true;
         }
     }
-    return true
+    return true;
 }
-
 
 fn valid_range(s: &str, equal_expr: &mut String, post_expr: &mut String) -> i32 {
     let length = s.len();
@@ -220,7 +208,6 @@ fn valid_range(s: &str, equal_expr: &mut String, post_expr: &mut String) -> i32 
     if length > 4 {
         let mut idx = 0;
 
-    
         while idx < length {
             if s.as_bytes()[idx] == b':' {
                 break;
@@ -281,7 +268,11 @@ fn valid_post_expr(s: &str, equal_expr: &mut String, post_expr: &mut String) -> 
         }
 
         while idx < length {
-            if s.as_bytes()[idx] == b'*' || s.as_bytes()[idx] == b'-' || s.as_bytes()[idx] == b'+' || s.as_bytes()[idx] == b'/' {
+            if s.as_bytes()[idx] == b'*'
+                || s.as_bytes()[idx] == b'-'
+                || s.as_bytes()[idx] == b'+'
+                || s.as_bytes()[idx] == b'/'
+            {
                 break;
             }
             idx += 1;
@@ -298,8 +289,8 @@ fn valid_post_expr(s: &str, equal_expr: &mut String, post_expr: &mut String) -> 
         let b = valid_integer(equal_expr);
         let mut sum = 0;
 
-        if ib (a) || b {
-            if ib (a) {
+        if ib(a) || b {
+            if ib(a) {
                 sum += 2;
             }
 
@@ -328,7 +319,7 @@ fn parse_func(s: &str, equal_expr: &mut String, exp1: &mut String, exp2: &mut St
     }
 
     let mut count = 0;
- 
+
     while count < length {
         if s.as_bytes()[count] == b'(' {
             break;
@@ -378,8 +369,6 @@ fn parse_func(s: &str, equal_expr: &mut String, exp1: &mut String, exp2: &mut St
 
     0
 }
-
-
 
 pub fn parse(s: &str) -> Response {
     let mut returns = Response::default();
@@ -456,7 +445,7 @@ pub fn parse(s: &str) -> Response {
     }
 
     if idx > 6 || idx == length || idx < 2 {
-        returns.status = 1; 
+        returns.status = 1;
         return returns;
     }
 
@@ -563,12 +552,12 @@ pub fn parse(s: &str) -> Response {
         }
     }
 
-    returns.status = 1; 
+    returns.status = 1;
     returns
 }
 
 #[cfg(test)]
-mod tests{
+mod tests {
     use super::*;
 
     #[test]
