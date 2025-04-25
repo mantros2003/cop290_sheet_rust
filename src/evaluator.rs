@@ -998,6 +998,54 @@ mod tests {
         assert!(db.get(2002) == Ok(&CellData::FloatData(2630.0)), "val = {:?}", db.get(2002));
         assert!(db.get(3002) == Ok(&CellData::FloatData(2630.0 / 3.0)), "val = {:?}", db.get(3002));
         assert!(db.get(4002) == Ok(&CellData::FloatData(274.6071)), "val = {:?}", db.get(4002));
+
+        _r = parser::parse("F3=SLEEP(1)");
+        _ec = evaluator(_r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+        assert!(db.get_cell_parent_dep(5002) == Some(DependencyData::new(12, DependencyNums::I32(1), DependencyNums::I32(0))));
+
+        _r = parser::parse("G3=SLEEP(F3)");
+        _ec = evaluator(_r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+        assert!(db.get_cell_parent_dep(6002) == Some(DependencyData::new(12, DependencyNums::U32(5002), DependencyNums::I32(0))));
+
+        assert!(db.get(5002) == Ok(&CellData::IntData(1)), "val = {:?}", db.get(5002));
+        assert!(db.get(6002) == Ok(&CellData::IntData(1)), "val = {:?}", db.get(6002));
+
+        _r = parser::parse("disable_output");
+        _ec = evaluator(_r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+        assert!(state.2 == false);
+
+        _r = parser::parse("enable_output");
+        _ec = evaluator(_r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+        assert!(state.2 == true);
+
+        _r = parser::parse("q");
+        _ec = evaluator(_r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+        assert!(state.1 == false);
+        assert!(_ec == -1);
+
+        state.1 = true;
+
+        _r = parser::parse("A4=A1+B1");
+        _ec = evaluator(_r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+
+        _r = parser::parse("B4=A4-100");
+        _ec = evaluator(_r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+
+        _r = parser::parse("C4=B4*A4");
+        _ec = evaluator(_r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+        
+        assert!(db.get(3) == Ok(&CellData::IntData(102)), "val = {:?}", db.get(3));
+        assert!(db.get(1003) == Ok(&CellData::IntData(2)), "val = {:?}", db.get(1003));
+        assert!(db.get(2003) == Ok(&CellData::IntData(204)), "val = {:?}", db.get(2003));
+
+        _r = parser::parse("A5=B5");
+        _ec = evaluator(_r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+
+        _r = parser::parse("B5=A1");
+        _ec = evaluator(_r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+
+        assert!(db.get(4) == db.get(1004));
+        assert!(db.get(0) == db.get(1004));
     }
 
     #[test]

@@ -564,8 +564,13 @@ mod tests {
     fn test_1() {
         let str = "A1=MAX(B1:X1)";
         let ret = parse(str);
-
+        assert!(ret == Response{status: 0, func: 8, target: 1001, arg1: 2001, arg2: 24001, arg_type:  3}, "r = {:?}", ret);
         println!("{ret:?}");
+
+        let str2 = "A1=B1";
+        let ret = parse(str2);
+        assert!(ret == Response{status: 0, func: 2, target: 1001, arg1: 2001, arg2: 0, arg_type:  2}, "r = {:?}", ret);
+        let str2 = "A1=MAX(Z1:X1)";
     }
     #[test]
     fn test_2() {
@@ -596,13 +601,40 @@ mod tests {
        let k1 = valid_integer("");
        let k2 = valid_integer("-");
        let k3 = valid_integer("-0");
+       let k6 = valid_integer("0");
        let k4 = valid_integer("-01");
+       let k7 = valid_integer("01");
        let k5 = valid_integer("-1");
-     
+       
        assert!(k1==false);
        assert!(k2==false);
        assert!(k3==true);
        assert!(k4==false);
        assert!(k5==true);
+
+       let k1 = valid_function("MIN");
+       let k2 = valid_function("MAX");
+       let k3 = valid_function("AVG");
+       let k4 = valid_function("SUM");
+       let k5 = valid_function("STDEV");
+       let k6 = valid_function("SLEEP");
+       let k7 = valid_function("VAR");
+       
+       assert!(k1==1);
+       assert!(k2==2);
+       assert!(k3==3);
+       assert!(k4==4);
+       assert!(k5==5);
+       assert!(k6==6);
+       assert!(k7==0);
+       
+       let add = valid_cell("we");
+       let add = valid_cell("00");
+       let add = valid_cell3("A11111");
+       let add = valid_cell3("AAAA11");
+       let add = valid_comp("aa" , "a" , "a" , "a");
+       let add = valid_comp("AA" , "1" , "AA" , "1");
+       let add = valid_comp("AA" , "1" , "AA" , "2");
+       let add = valid_comp("A" , "1" , "AA" , "3");
     }
 }
