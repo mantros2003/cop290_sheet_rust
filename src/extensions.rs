@@ -1,7 +1,7 @@
 pub mod app;
+mod command_handler;
 mod input;
 mod ui;
-mod command_handler;
 
 use self::app::{App, AppCommand};
 use self::input::handle_input;
@@ -16,6 +16,7 @@ use ratatui::backend::CrosstermBackend;
 use ratatui::Terminal;
 use std::io::{stdout, Stdout};
 
+#[cfg(not(tarpaulin_include))]
 pub fn run_tui(db: Database) -> std::io::Result<()> {
     enable_raw_mode()?;
     let mut stdout = stdout();

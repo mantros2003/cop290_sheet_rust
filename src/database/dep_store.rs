@@ -60,5 +60,18 @@ mod tests {
         // let temp = &DependencyObject::new(1001, 0, DependencyNums::U32(2002), DependencyNums::U32(4004));
         let v1: Vec<&DependencyObject> = vec![];
         assert!(v == v1);
+
+        // Check it!!!
+        store.remove(DependencyObject::new(
+            1001,
+            0,
+            DependencyNums::U32(2002),
+            DependencyNums::U32(4004),
+        ));
+        assert!(
+            store.get_from_point(3003).len() == 0,
+            "{:?}",
+            store.get_from_point(3003)
+        );
     }
 }

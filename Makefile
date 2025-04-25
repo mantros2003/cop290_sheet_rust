@@ -1,8 +1,6 @@
+EXEC_NAME = "spreadsheet"
 EXEC_DIR = "target/release"
-EXEC_NAME = "sheet"
+EXTENSION_DIR = "src/extensions"
 
 $(EXEC_DIR)/$(EXEC_NAME):
-	cargo build --release
-
-test: $(EXEC_DIR)/$(EXEC_NAME)
-	cargo run --release
+	cargo buil --release

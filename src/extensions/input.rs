@@ -1,8 +1,8 @@
 use crate::display::generate_column_label;
 use crate::extensions::app::Mode;
 use crate::extensions::app::{App, AppCommand};
-use crate::{evaluator::evaluator, parser::parse};
 use crate::extensions::command_handler::handle;
+use crate::{evaluator::evaluator, parser::parse};
 use crossterm::event::{self, Event, KeyCode};
 
 pub fn handle_input(app: &mut App) -> std::io::Result<Option<AppCommand>> {
@@ -127,13 +127,15 @@ pub fn handle_input(app: &mut App) -> std::io::Result<Option<AppCommand>> {
                 KeyCode::Char(c) => {
                     app.input_buffer.push(c);
                 }
-                KeyCode::Enter => {
-                    match handle(app, app.input_buffer[1..].to_string().clone()) {
-                        Ok(Some(val)) => { return Ok(Some(val)); }
-                        Ok(None) => {},
-                        Err(err) => { return Err(err); }
+                KeyCode::Enter => match handle(app, app.input_buffer[1..].to_string().clone()) {
+                    Ok(Some(val)) => {
+                        return Ok(Some(val));
                     }
-                }
+                    Ok(None) => {}
+                    Err(err) => {
+                        return Err(err);
+                    }
+                },
                 _ => {}
             },
             Mode::Select(r, c) => match key_event.code {
@@ -150,21 +152,21 @@ pub fn handle_input(app: &mut App) -> std::io::Result<Option<AppCommand>> {
                     app.input_buffer.clear();
                 }
                 _ => {}
-            }
+            },
             Mode::ErrMsg(_) => match key_event.kind {
                 event::KeyEventKind::Press => {
                     app.mode = Mode::Normal;
                     app.input_buffer.clear();
                 }
                 _ => {}
-            }
-            Mode::Graph(_, _) => match key_event.code {
+            },
+            Mode::Graph(a, _) => match key_event.code {
                 KeyCode::Esc | KeyCode::Char('q') => {
-                    app.mode = Mode::Normal;
+                    app.mode = Mode::Select(a.0, a.1);
                     app.input_buffer.clear();
                 }
-                _ => {},
-            }
+                _ => {}
+            },
         }
     }
     Ok(None)

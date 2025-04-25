@@ -1,4 +1,5 @@
 /target
+/doc
 .vscode
 .dSYM
 .DS_Store

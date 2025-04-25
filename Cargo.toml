@@ -10,5 +10,5 @@ crossterm = "0.27"
 csv = "1.3"
 
 [[bin]]
-name = "sheet"
+name = "spreadsheet"
 path = "src/main.rs"

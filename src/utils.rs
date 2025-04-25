@@ -1,12 +1,13 @@
-use crate::database::{range::DependencyNums, Database, cell::CellData};
+use crate::database::range::DependencyData;
+use crate::database::{cell::CellData, range::DependencyNums, Database};
 use crate::display::{self, generate_column_label};
 use crate::extensions::app::{App, Mode};
-use csv::{Reader, Writer};
+use csv::Writer;
+use ratatui::layout::{Constraint, Direction, Layout, Rect};
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs::File;
 use std::io::{self, Write};
-use ratatui::layout::{Rect, Layout, Constraint, Direction};
 
 enum VisitState {
     Visiting,
@@ -63,6 +64,26 @@ pub fn topological_sort(db: &Database, start: u32) -> Result<Vec<u32>, ()> {
     Ok(result)
 }
 
+pub fn rem_dep(db: &mut Database, dep: Option<DependencyData>, cell_idx: u32) {
+    match dep {
+        Some(dep) => {
+            if dep.get_oper() <= 6 {
+                match dep.get_pre() {
+                    DependencyNums::U32(u) => db.rem_dep_point(u, cell_idx),
+                    _ => {}
+                }
+                match dep.get_post() {
+                    DependencyNums::U32(u) => db.rem_dep_point(u, cell_idx),
+                    _ => {}
+                }
+            } else {
+                db.rem_dep_range(cell_idx);
+            };
+        }
+        None => {}
+    };
+}
+
 pub fn save_to_csv(db: &Database, path: &str) -> Result<(), Box<dyn Error>> {
     // Prepare the 2D vector
     let mut table: Vec<Vec<String>> =
@@ -89,8 +110,10 @@ pub fn save_to_csv(db: &Database, path: &str) -> Result<(), Box<dyn Error>> {
 }
 
 pub fn load_from_csv(path: &str) -> Result<Database, Box<dyn Error>> {
-    let mut rdr = Reader::from_reader(File::open(path)?);
     let mut db = Database::new(0, 0);
+    let mut rdr = csv::ReaderBuilder::new()
+        .has_headers(false)
+        .from_reader(File::open(path)?);
 
     for (row_idx, result) in rdr.records().enumerate() {
         db.num_rows = db.num_rows.max(row_idx as u16 + 1);
@@ -100,7 +123,7 @@ pub fn load_from_csv(path: &str) -> Result<Database, Box<dyn Error>> {
             db.num_cols = db.num_cols.max(col_idx as u16 + 1);
 
             if value.trim().is_empty() {
-                continue; // skip empty cells
+                continue;
             }
 
             if let Ok(int_val) = value.parse::<i32>() {
@@ -133,7 +156,7 @@ pub fn get_formula(db: &Database, cell_idx: u32) -> String {
                 }
                 2 => {
                     if let DependencyNums::U32(val) = dep.get_pre() {
-                        let ans1 = display::generate_column_label((val ) / 1000);
+                        let ans1 = display::generate_column_label((val) / 1000);
                         let ans2 = val % 1000;
                         format!("={}{}", ans1, ans2 + 1)
                     } else {
@@ -153,12 +176,10 @@ pub fn get_formula(db: &Database, cell_idx: u32) -> String {
                         DependencyNums::U32(val1) => {
                             match dep.get_post() {
                                 DependencyNums::U32(val2) => {
-                                    let ans11 =
-                                        display::generate_column_label((val1 ) / 1000);
+                                    let ans11 = display::generate_column_label((val1) / 1000);
                                     let ans21 = val1 % 1000;
 
-                                    let ans12 =
-                                        display::generate_column_label((val2 ) / 1000);
+                                    let ans12 = display::generate_column_label((val2) / 1000);
                                     let ans22 = val2 % 1000;
 
                                     // format!("={}{}", ans1 , ans2)
@@ -167,8 +188,7 @@ pub fn get_formula(db: &Database, cell_idx: u32) -> String {
                                 }
                                 _ => {
                                     let x = dep.get_post().to_string();
-                                    let ans11 =
-                                        display::generate_column_label((val1 ) / 1000);
+                                    let ans11 = display::generate_column_label((val1) / 1000);
                                     let ans21 = val1 % 1000;
 
                                     // format!("={}{}", ans1 , ans2)
@@ -181,8 +201,7 @@ pub fn get_formula(db: &Database, cell_idx: u32) -> String {
                             match dep.get_post() {
                                 DependencyNums::U32(val2) => {
                                     let x = dep.get_pre().to_string();
-                                    let ans12 =
-                                        display::generate_column_label((val2 ) / 1000);
+                                    let ans12 = display::generate_column_label((val2) / 1000);
                                     let ans22 = val2 % 1000;
 
                                     // format!("={}{}", ans1 , ans2)
@@ -200,14 +219,14 @@ pub fn get_formula(db: &Database, cell_idx: u32) -> String {
                         }
                     }
                 }
-                7..=12 => {
+                7..12 => {
                     if let (DependencyNums::U32(val1), DependencyNums::U32(val2)) =
                         (dep.get_pre(), dep.get_post())
                     {
-                        let ans11 = display::generate_column_label((val1 ) / 1000);
+                        let ans11 = display::generate_column_label((val1) / 1000);
                         let ans21 = val1 % 1000;
 
-                        let ans12 = display::generate_column_label((val2 ) / 1000);
+                        let ans12 = display::generate_column_label((val2) / 1000);
                         let ans22 = val2 % 1000;
 
                         let func = match dep.get_oper() {
@@ -224,6 +243,15 @@ pub fn get_formula(db: &Database, cell_idx: u32) -> String {
                         String::from("=ERR")
                     }
                 }
+                12 => match dep.get_pre() {
+                    DependencyNums::U32(u) => format!(
+                        "=SLEEP({}{})",
+                        generate_column_label(u / 1000),
+                        (u % 1000) + 1
+                    ),
+                    DependencyNums::I32(i) => format!("=SLEEP({})", i),
+                    _ => String::from("=ERR"),
+                },
                 _ => String::from("=UNKNOWN"),
             }
         } else {
@@ -242,7 +270,8 @@ pub fn extract_range_data(app: &App) -> Vec<(String, f32)> {
         let (row_low, row_high) = if r1 <= r2 { (r1, r2) } else { (r2, r1) };
         let (col_low, col_high) = if c1 <= c2 { (c1, c2) } else { (c2, c1) };
 
-        let mut res: Vec<(String, f32)> = Vec::with_capacity((row_high - row_low + 1) * (col_high - col_low + 1));
+        let mut res: Vec<(String, f32)> =
+            Vec::with_capacity((row_high - row_low + 1) * (col_high - col_low + 1));
 
         for col in col_low..=col_high {
             for row in row_low..=row_high {
@@ -251,13 +280,17 @@ pub fn extract_range_data(app: &App) -> Vec<(String, f32)> {
 
                 //let cell_label = cell_label.as_str();
                 match app.db.get((1000 * col + row) as u32) {
-                    Ok(data) => {
-                        match data {
-                            CellData::IntData(i) => { res.push((cell_label, *i as f32)); }
-                            CellData::FloatData(f) => { res.push((cell_label, *f)); }
+                    Ok(data) => match data {
+                        CellData::IntData(i) => {
+                            res.push((cell_label, *i as f32));
                         }
+                        CellData::FloatData(f) => {
+                            res.push((cell_label, *f));
+                        }
+                    },
+                    Err(_) => {
+                        res.push((cell_label, 0f32));
                     }
-                    Err(_) => { res.push((cell_label, 0f32)); }
                 }
             }
         }

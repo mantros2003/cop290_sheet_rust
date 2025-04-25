@@ -26,6 +26,7 @@ const ERRMSG: [&str; 5] = [
     "cells out of range",
 ];
 
+#[cfg(not(tarpaulin_include))]
 fn main() {
     env::set_var("RUST_BACKTRACE", "1");
 
@@ -70,7 +71,7 @@ fn main() {
         }
     };
 
-    if num_rows <= 0 || num_rows > MAXROWS || num_cols <= 0 || num_cols > MAXCOLS {
+    if num_rows > MAXROWS || num_cols > MAXCOLS {
         println!("Values out of range");
         process::exit(1);
     }

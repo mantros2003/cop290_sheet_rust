@@ -7,8 +7,8 @@ use ratatui::{
     backend::Backend,
     layout::{Constraint, Direction, Layout},
     style::{Color, Modifier, Style},
-    widgets::{Block, Borders, Cell, Paragraph, Row, Table, Bar, BarGroup,BarChart},
     text::Line,
+    widgets::{Bar, BarChart, BarGroup, Block, Borders, Cell, Paragraph, Row, Table},
     Frame,
 };
 
@@ -51,8 +51,16 @@ pub fn render<B: Backend>(f: &mut Frame, app: &mut App) {
             let mut cell = Cell::from(app.get_value(r, c));
             match app.mode {
                 Mode::Select(rs, cs) => {
-                    let (row_start, row_end) = if rs <= app.selected.0 { (rs, app.selected.0) } else { (app.selected.0, rs) };
-                    let (col_start, col_end) = if cs <= app.selected.1 { (cs, app.selected.1) } else { (app.selected.1, cs) };
+                    let (row_start, row_end) = if rs <= app.selected.0 {
+                        (rs, app.selected.0)
+                    } else {
+                        (app.selected.0, rs)
+                    };
+                    let (col_start, col_end) = if cs <= app.selected.1 {
+                        (cs, app.selected.1)
+                    } else {
+                        (app.selected.1, cs)
+                    };
 
                     if (row_start..=row_end).contains(&r) && (col_start..=col_end).contains(&c) {
                         cell = cell.style(
@@ -62,7 +70,7 @@ pub fn render<B: Backend>(f: &mut Frame, app: &mut App) {
                                 .add_modifier(Modifier::BOLD),
                         );
                     }
-                },
+                }
                 _ => {}
             }
             if app.selected == (r, c) {
@@ -109,10 +117,7 @@ pub fn render<B: Backend>(f: &mut Frame, app: &mut App) {
 
     let bottom_row = Layout::default()
         .direction(Direction::Horizontal)
-        .constraints([
-            Constraint::Percentage(75),
-            Constraint::Percentage(25)
-        ])
+        .constraints([Constraint::Percentage(75), Constraint::Percentage(25)])
         .split(chunks[1]);
 
     let ip_op_bar = bottom_row[0];
@@ -128,24 +133,37 @@ pub fn render<B: Backend>(f: &mut Frame, app: &mut App) {
     f.render_widget(table, chunks[0]);
     match app.mode {
         Mode::ErrMsg(_) => {
-            f.render_widget(Paragraph::new(
-                    Text::styled(format!("{}", ip_op_text),
-                    Style::default()
-                        .fg(Color::Red)
-                    )
-                )
-                .alignment(Alignment::Left), ip_op_bar);
-    },
-        _ => { f.render_widget(Paragraph::new(format!("{}", ip_op_text)).alignment(Alignment::Left), ip_op_bar); }
+            f.render_widget(
+                Paragraph::new(Text::styled(
+                    format!("{}", ip_op_text),
+                    Style::default().fg(Color::Red),
+                ))
+                .alignment(Alignment::Left),
+                ip_op_bar,
+            );
+        }
+        _ => {
+            f.render_widget(
+                Paragraph::new(format!("{}", ip_op_text)).alignment(Alignment::Left),
+                ip_op_bar,
+            );
+        }
     }
-    f.render_widget(Paragraph::new(format!("{}, {} | {}", app.selected.0, app.selected.1, mode_text)).alignment(Alignment::Right), status_bar);
+    f.render_widget(
+        Paragraph::new(format!(
+            "{}, {} | {}",
+            app.selected.0, app.selected.1, mode_text
+        ))
+        .alignment(Alignment::Right),
+        status_bar,
+    );
 
     if let Mode::Graph(_, _) = app.mode {
         let graphing_area = centered_rect(60, 50, chunks[0]);
 
         let data = extract_range_data(app);
         let data = transform_data_for_barchart(&data);
-        
+
         let bars: Vec<Bar> = data
             .iter()
             .map(|(label, value)| {
@@ -161,13 +179,14 @@ pub fn render<B: Backend>(f: &mut Frame, app: &mut App) {
         let bar_group = BarGroup::default().bars(&bars);
 
         let barchart = BarChart::default()
-            .data(bar_group)
-            .bar_width(5) // Adjust width as needed
             .block(
-                ratatui::widgets::Block::default()
+                Block::default()
                     .title("Bar Chart")
-                    .borders(ratatui::widgets::Borders::ALL),
-            );
+                    .borders(Borders::ALL)
+                    .style(Style::default().bg(Color::Black)), // Set popup background color here
+            )
+            .data(bar_group)
+            .bar_width(5);
 
         f.render_widget(barchart, graphing_area);
     }

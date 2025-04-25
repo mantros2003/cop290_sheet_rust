@@ -418,7 +418,7 @@ fn sleep_fn(db: &mut Database, cell_idx: u32) {
     let dep = match dep {
         Some(dep) => dep,
         None => {
-            panic!();
+            panic!("Should have had a dep");
         }
     };
 
@@ -602,7 +602,7 @@ pub fn evaluator(
     };
     match old_dep {
         Some(dep) => {
-            if dep.get_oper() <= 6 {
+            if (dep.get_oper() <= 6) | (dep.get_oper() == 12) {
                 match dep.get_pre() {
                     DependencyNums::U32(u) => db.rem_dep_point(u, (r.target - 1001) as u32),
                     _ => {}
@@ -734,21 +734,19 @@ pub fn evaluator(
             panic!("Target is not initialized, but should have been initialized. This only means one thing..., the world is about to end :(")
         };
 
+        let post = DependencyNums::I32(0);
         let pre;
+
         if r.arg_type & 2 != 0 {
             pre = DependencyNums::U32((r.arg1 - 1001) as u32);
+            let dep_data = DependencyData::new(r.func as u8, pre, post);
+            target.modify_dep(dep_data);
+            db.add_dep_point((r.arg1 - 1001) as u32, (r.target - 1001) as u32);
         } else {
             pre = DependencyNums::I32(r.arg1);
+            let dep_data = DependencyData::new(r.func as u8, pre, post);
+            target.modify_dep(dep_data);
         }
-
-        let post = DependencyNums::U32(0);
-        let dep_data = DependencyData::new(r.func as u8, pre, post);
-
-        target.modify_dep(dep_data);
-        db.add_dep_range(DependencyObject::from_dep_data(
-            (r.target - 1001) as u32,
-            dep_data,
-        ));
     }
 
     let topo_order;
@@ -757,29 +755,44 @@ pub fn evaluator(
     } else {
         let target;
         if let Ok(cell) = db.get_cell_mut((r.target - 1001) as u32) {
-            target = cell
+            target = cell;
         } else {
-            panic!("Target is not initialized, but should have been initialized. This only means one thing..., the world is about to end :(")
+            panic!("Panicking from dependency removal logic")
         };
 
         target.set_error(old_error);
-        if let Some(dep) = old_dep {
-            let _ = target.modify_dep(dep);
-            if (2..=6).contains(&dep.get_oper()) {
-                match dep.get_pre() {
-                    DependencyNums::U32(u) => {},
-                    _ => {}
-                }
-                db.add_dep_range(DependencyObject::from_dep_data(
-                    (r.target - 1001) as u32,
-                    dep,
-                ))
-            } else {
-                db.add_dep_range(DependencyObject::from_dep_data(
-                    (r.target - 1001) as u32,
-                    dep,
-                ))
-            };
+        match target.get_dep() {
+            Some(dep) => {
+                if (dep.get_oper() <= 6) | (dep.get_oper() == 12) {
+                    match dep.get_pre() {
+                        DependencyNums::U32(u) => db.rem_dep_point(u, (r.target - 1001) as u32),
+                        _ => {}
+                    }
+                    match dep.get_post() {
+                        DependencyNums::U32(u) => db.rem_dep_point(u, (r.target - 1001) as u32),
+                        _ => {}
+                    }
+                } else {
+                    db.rem_dep_range((r.target - 1001) as u32);
+                };
+            }
+            None => {}
+        };
+
+        let target;
+        if let Ok(cell) = db.get_cell_mut((r.target - 1001) as u32) {
+            target = cell;
+        } else {
+            panic!("Panicking from dependency removal logic")
+        };
+
+        match old_dep {
+            Some(dep) => {
+                target.modify_dep(dep);
+            }
+            None => {
+                target.rem_dep();
+            }
         }
 
         return 3;

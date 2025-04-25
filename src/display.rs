@@ -18,6 +18,7 @@ pub fn generate_column_label(mut col_index: u32) -> String {
     label.chars().rev().collect()
 }
 
+#[cfg(not(tarpaulin_include))]
 pub fn print_spreadsheet(db: &Database, top_left_cell: u32) {
     let top_left_col = top_left_cell / 1000;
     let top_left_row = top_left_cell % 1000;
@@ -58,5 +59,16 @@ pub fn print_spreadsheet(db: &Database, top_left_cell: u32) {
             }
         }
         println!();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_col_label() {
+        assert!(generate_column_label(0) == "A");
+        assert!(generate_column_label(26) == "AA");
     }
 }
