@@ -567,4 +567,42 @@ mod tests {
 
         println!("{ret:?}");
     }
+    #[test]
+    fn test_2() {
+       let k1 = valid_row("abcd");
+       let k2 = valid_row("01");
+       let k3 = valid_row("1a");
+       assert!(k1==false);
+       assert!(k2==false);
+       assert!(k3==false);
+       
+       let k1 = valid_row2("abcd");
+       let k2 = valid_row2("01");
+       let k3 = valid_row2("1a");
+       assert!(k1==0);
+       assert!(k2==0);
+       assert!(k3==0);
+       
+       let k1 = valid_column("abcd");
+       let k2 = valid_column("01");
+       assert!(k1==false);
+       assert!(k2==false);
+
+       let k1 = valid_column2("abcd");
+       let k2 = valid_column2("01");
+       assert!(k1==0);
+       assert!(k2==0);
+       
+       let k1 = valid_integer("");
+       let k2 = valid_integer("-");
+       let k3 = valid_integer("-0");
+       let k4 = valid_integer("-01");
+       let k5 = valid_integer("-1");
+     
+       assert!(k1==false);
+       assert!(k2==false);
+       assert!(k3==true);
+       assert!(k4==false);
+       assert!(k5==true);
+    }
 }

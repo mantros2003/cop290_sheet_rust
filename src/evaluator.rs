@@ -492,7 +492,7 @@ fn stdev_fn(db: &mut Database, cell_idx: u32) {
         panic!()
     };
 
-    target.set_data_f(var);
+    target.set_data_f(var.sqrt());
     target.set_error(false);
 }
 
@@ -987,9 +987,17 @@ mod tests {
         _r = parser::parse("C3=SUM(A2:C2)");
         _ec = evaluator(_r, &mut db, &mut state.0, &mut state.1, &mut state.2);
 
+        _r = parser::parse("D3=AVG(A2:C2)");
+        _ec = evaluator(_r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+
+        _r = parser::parse("E3=STDEV(A2:C2)");
+        _ec = evaluator(_r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+
         assert!(db.get(2) == Ok(&CellData::FloatData(1300.0)), "val = {:?}", db.get(2));
         assert!(db.get(1002) == Ok(&CellData::FloatData(130.0)), "val = {:?}", db.get(1002));
         assert!(db.get(2002) == Ok(&CellData::FloatData(2630.0)), "val = {:?}", db.get(2002));
+        assert!(db.get(3002) == Ok(&CellData::FloatData(2630.0 / 3.0)), "val = {:?}", db.get(3002));
+        assert!(db.get(4002) == Ok(&CellData::FloatData(274.6071)), "val = {:?}", db.get(4002));
     }
 
     #[test]
@@ -997,10 +1005,10 @@ mod tests {
         let mut db = Database::new(100, 100);
         let mut state: (u32, bool, bool) = (0, true, true);
 
-        let mut r = parser::parse("scroll_to D10");
+        let r = parser::parse("scroll_to D10");
         assert!(r == Response{status: 0, func: 20, target: 4010, arg1: 0, arg2: 0, arg_type:  0}, "r = {:?}", r);
 
-        let mut ec = evaluator(r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+        let ec = evaluator(r, &mut db, &mut state.0, &mut state.1, &mut state.2);
         assert!(state == (3009,true , true));
         assert!(ec == 0);
     
@@ -1017,22 +1025,33 @@ mod tests {
         assert!(state == (10,true , true));
         assert!(ec == 0);
 
-        let mut r = parser::parse("d");
+        r = parser::parse("d");
         assert!(r == Response{status: 0, func: 14, target: 0, arg1: 0, arg2: 0, arg_type:  0}, "r = {:?}", r);
-        let mut ec = evaluator(r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+        ec = evaluator(r, &mut db, &mut state.0, &mut state.1, &mut state.2);
         assert!(state == (10010,true , true));
         assert!(ec == 0);
         
-        let mut r = parser::parse("w");
+        r = parser::parse("w");
         assert!(r == Response{status: 0, func: 13, target: 0, arg1: 0, arg2: 0, arg_type:  0}, "r = {:?}", r);
-        let mut ec = evaluator(r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+        ec = evaluator(r, &mut db, &mut state.0, &mut state.1, &mut state.2);
         assert!(state == (10000,true , true));
         assert!(ec == 0);
 
-        let mut r = parser::parse("a");
+        r = parser::parse("a");
         assert!(r == Response{status: 0, func: 15, target: 0, arg1: 0, arg2: 0, arg_type:  0}, "r = {:?}", r);
-        let mut ec = evaluator(r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+        ec = evaluator(r, &mut db, &mut state.0, &mut state.1, &mut state.2);
         assert!(state == (0,true , true));
+        assert!(ec == 0);
+
+        state.0 = 0;
+        r = parser::parse("w");
+        ec = evaluator(r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+        assert!(state.0 == 0);
+        assert!(ec == 0);
+
+        r = parser::parse("a");
+        ec = evaluator(r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+        assert!(state.0 == 0);
         assert!(ec == 0);
     
     }

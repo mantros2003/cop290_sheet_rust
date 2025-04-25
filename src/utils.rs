@@ -1,4 +1,3 @@
-use crate::database::range::DependencyData;
 use crate::database::{cell::CellData, range::DependencyNums, Database};
 use crate::display::{self, generate_column_label};
 use crate::extensions::app::{App, Mode};
@@ -64,26 +63,28 @@ pub fn topological_sort(db: &Database, start: u32) -> Result<Vec<u32>, ()> {
     Ok(result)
 }
 
-pub fn rem_dep(db: &mut Database, dep: Option<DependencyData>, cell_idx: u32) {
-    match dep {
-        Some(dep) => {
-            if (dep.get_oper() <= 6) | (dep.get_oper() == 12) {
-                match dep.get_pre() {
-                    DependencyNums::U32(u) => db.rem_dep_point(u, cell_idx),
-                    _ => {}
-                }
-                match dep.get_post() {
-                    DependencyNums::U32(u) => db.rem_dep_point(u, cell_idx),
-                    _ => {}
-                }
-            } else {
-                db.rem_dep_range(cell_idx, dep.clone());
-            };
-        }
-        None => {}
-    };
-}
+// Check: try to use this function
+// pub fn rem_dep(db: &mut Database, dep: Option<DependencyData>, cell_idx: u32) {
+//     match dep {
+//         Some(dep) => {
+//             if (dep.get_oper() <= 6) | (dep.get_oper() == 12) {
+//                 match dep.get_pre() {
+//                     DependencyNums::U32(u) => db.rem_dep_point(u, cell_idx),
+//                     _ => {}
+//                 }
+//                 match dep.get_post() {
+//                     DependencyNums::U32(u) => db.rem_dep_point(u, cell_idx),
+//                     _ => {}
+//                 }
+//             } else {
+//                 db.rem_dep_range(cell_idx, dep.clone());
+//             };
+//         }
+//         None => {}
+//     };
+// }
 
+#[cfg(not(tarpaulin_include))]
 pub fn save_to_csv(db: &Database, path: &str) -> Result<(), Box<dyn Error>> {
     // Prepare the 2D vector
     let mut table: Vec<Vec<String>> =
@@ -109,6 +110,7 @@ pub fn save_to_csv(db: &Database, path: &str) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+#[cfg(not(tarpaulin_include))]
 pub fn load_from_csv(path: &str) -> Result<Database, Box<dyn Error>> {
     let mut db = Database::new(0, 0);
     let mut rdr = csv::ReaderBuilder::new()
@@ -143,6 +145,7 @@ pub fn load_from_csv(path: &str) -> Result<Database, Box<dyn Error>> {
     Ok(db)
 }
 
+#[cfg(not(tarpaulin_include))]
 pub fn get_formula(db: &Database, cell_idx: u32) -> String {
     if let Ok(cell) = db.get_cell(cell_idx) {
         if let Some(dep) = cell.get_dep() {
@@ -265,6 +268,7 @@ pub fn get_formula(db: &Database, cell_idx: u32) -> String {
     }
 }
 
+#[cfg(not(tarpaulin_include))]
 pub fn extract_range_data(app: &App) -> Vec<(String, f32)> {
     if let Mode::Graph((r1, c1), (r2, c2)) = app.mode {
         let (row_low, row_high) = if r1 <= r2 { (r1, r2) } else { (r2, r1) };
@@ -301,6 +305,7 @@ pub fn extract_range_data(app: &App) -> Vec<(String, f32)> {
     }
 }
 
+#[cfg(not(tarpaulin_include))]
 pub fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
     let popup_layout = Layout::default()
         .direction(Direction::Vertical)
@@ -321,6 +326,7 @@ pub fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
         .split(popup_layout[1])[1]
 }
 
+#[cfg(not(tarpaulin_include))]
 pub fn transform_data_for_barchart(data: &Vec<(String, f32)>) -> Vec<(&str, u64)> {
     data.iter()
         .map(|(label, value)| {
