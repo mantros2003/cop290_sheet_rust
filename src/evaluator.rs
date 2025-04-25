@@ -900,9 +900,141 @@ mod tests {
         let mut db = Database::new(100, 100);
         let mut state: (u32, bool, bool) = (0, true, true);
 
-        let mut r = parser::parse("A1=100");
-        assert!(r == Response{status: 0, func: 1, target: 1001, arg1: 100, arg2: 0, arg_type:  0}, "r = {:?}", r);
+        let mut _r = parser::parse("A1=100");
+        assert!(_r == Response{status: 0, func: 1, target: 1001, arg1: 100, arg2: 0, arg_type:  0}, "r = {:?}", _r);
+
+        let mut _ec = evaluator(_r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+        assert!(_ec == 0);
+        assert!(state == (0, true, true));
+        assert!(db.get(0) == Ok(&CellData::IntData(100)));
+
+        _r = parser::parse("A1=50+50");
+        assert!(_r == Response{status: 0, func: 3, target: 1001, arg1: 50, arg2: 50, arg_type:  0}, "r = {:?}", _r);
+
+        _ec = evaluator(_r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+        assert!(_ec == 0);
+        assert!(state == (0, true, true));
+        assert!(db.get(0) == Ok(&CellData::IntData(100)));
+
+        _r = parser::parse("A1=B1+100");
+        assert!(_r == Response{status: 0, func: 3, target: 1001, arg1: 2001, arg2: 100, arg_type: 2}, "r = {:?}", _r);
+
+        _ec = evaluator(_r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+        assert!(_ec == 0);
+        assert!(state == (0, true, true));
+        assert!(db.get(0) == Ok(&CellData::IntData(100)));
+        assert!(db.get_cell_parent_dep(0) == Some(DependencyData::new(3, DependencyNums::U32(1000), DependencyNums::I32(100))));
+
+        _r = parser::parse("A1=100");
+        assert!(_r == Response{status: 0, func: 1, target: 1001, arg1: 100, arg2: 0, arg_type: 0}, "r = {:?}", _r);
+
+        _ec = evaluator(_r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+        assert!(_ec == 0);
+        assert!(state == (0, true, true));
+        assert!(db.get(0) == Ok(&CellData::IntData(100)));
+        assert!(db.get_cell_parent_dep(0) == None);
+
+        _r = parser::parse("C1=A1/B1");
+        assert!(_r == Response{status: 0, func: 6, target: 3001, arg1: 1001, arg2: 2001, arg_type: 3}, "r = {:?}", _r);
+
+        _ec = evaluator(_r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+        assert!(_ec == 0);
+        assert!(state == (0, true, true));
+        assert!(db.get(2000) == Err(true));
+        assert!(db.get_cell_parent_dep(2000) == Some(DependencyData::new(6, DependencyNums::U32(0), DependencyNums::U32(1000))));
+
+        _r = parser::parse("B1=1");
+        assert!(_r == Response{status: 0, func: 1, target: 2001, arg1: 1, arg2: 0, arg_type: 0}, "r = {:?}", _r);
+
+        _ec = evaluator(_r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+        assert!(_ec == 0);
+        assert!(state == (0, true, true));
+        assert!(db.get(2000) == Ok(&CellData::IntData(100)), "val = {:?}", db.get(2000));
+        assert!(db.get_cell_parent_dep(2000) == Some(DependencyData::new(6, DependencyNums::U32(0), DependencyNums::U32(1000))));
+
+        _r = parser::parse("B1=2");
+        _ec = evaluator(_r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+        assert!(db.get(2000) == Ok(&CellData::IntData(50)));
+
+        _r = parser::parse("A2=A1+30");
+        _ec = evaluator(_r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+
+        _r = parser::parse("B2=A2*10");
+        _ec = evaluator(_r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+
+        _r = parser::parse("C2=B2-A1");
+        _ec = evaluator(_r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+
+        assert!(db.get(1) == Ok(&CellData::IntData(130)), "val = {:?}", db.get(1));
+        assert!(db.get(1001) == Ok(&CellData::IntData(1300)), "val = {:?}", db.get(2000));
+        assert!(db.get(2001) == Ok(&CellData::IntData(1200)), "val = {:?}", db.get(2001));
+
+        _r = parser::parse("A1=MAX(A2:C2)");
+        assert!(_r == Response{target: 1001, status: 0, func: 8, arg1: 1002, arg2: 3002, arg_type: 3});
+
+        _ec = evaluator(_r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+        assert!(_ec == 3);
+        assert!(state == (0, true, true));
+        assert!(db.get(0) == Ok(&CellData::IntData(100)), "val = {:?}", db.get(0));
+        assert!(db.get_cell_parent_dep(0) == None);
+
+        _r = parser::parse("A3=MAX(A2:C2)");
+        _ec = evaluator(_r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+
+        _r = parser::parse("B3=MIN(A2:C2)");
+        _ec = evaluator(_r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+
+        _r = parser::parse("C3=SUM(A2:C2)");
+        _ec = evaluator(_r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+
+        assert!(db.get(2) == Ok(&CellData::FloatData(1300.0)), "val = {:?}", db.get(2));
+        assert!(db.get(1002) == Ok(&CellData::FloatData(130.0)), "val = {:?}", db.get(1002));
+        assert!(db.get(2002) == Ok(&CellData::FloatData(2630.0)), "val = {:?}", db.get(2002));
+    }
+
+    #[test]
+    fn test_scroll() {
+        let mut db = Database::new(100, 100);
+        let mut state: (u32, bool, bool) = (0, true, true);
+
+        let mut r = parser::parse("scroll_to D10");
+        assert!(r == Response{status: 0, func: 20, target: 4010, arg1: 0, arg2: 0, arg_type:  0}, "r = {:?}", r);
 
         let mut ec = evaluator(r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+        assert!(state == (3009,true , true));
+        assert!(ec == 0);
+    
     }
+
+    #[test]
+    fn test_wasd() {
+        let mut db = Database::new(100, 100);
+        let mut state: (u32, bool, bool) = (0, true, true);
+
+        let mut r = parser::parse("s");
+        assert!(r == Response{status: 0, func: 16, target: 0, arg1: 0, arg2: 0, arg_type:  0}, "r = {:?}", r);
+        let mut ec = evaluator(r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+        assert!(state == (10,true , true));
+        assert!(ec == 0);
+
+        let mut r = parser::parse("d");
+        assert!(r == Response{status: 0, func: 14, target: 0, arg1: 0, arg2: 0, arg_type:  0}, "r = {:?}", r);
+        let mut ec = evaluator(r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+        assert!(state == (10010,true , true));
+        assert!(ec == 0);
+        
+        let mut r = parser::parse("w");
+        assert!(r == Response{status: 0, func: 13, target: 0, arg1: 0, arg2: 0, arg_type:  0}, "r = {:?}", r);
+        let mut ec = evaluator(r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+        assert!(state == (10000,true , true));
+        assert!(ec == 0);
+
+        let mut r = parser::parse("a");
+        assert!(r == Response{status: 0, func: 15, target: 0, arg1: 0, arg2: 0, arg_type:  0}, "r = {:?}", r);
+        let mut ec = evaluator(r, &mut db, &mut state.0, &mut state.1, &mut state.2);
+        assert!(state == (0,true , true));
+        assert!(ec == 0);
+    
+    }
+
 }

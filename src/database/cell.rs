@@ -3,7 +3,7 @@ use std::mem;
 use std::ops::{Add, Div, Mul, Sub};
 
 /// Enum for different types of data that a spreadsheet cell can store
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum CellData {
     IntData(i32),
     FloatData(f32),

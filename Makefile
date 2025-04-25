@@ -4,3 +4,6 @@ EXTENSION_DIR = "src/extensions"
 
 $(EXEC_DIR)/$(EXEC_NAME):
 	cargo build --release
+
+coverage:
+	cargo tarpaulin --exclude-files $(EXTENSION_DIR)/*

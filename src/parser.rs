@@ -430,7 +430,7 @@ pub fn parse(s: &str) -> Response {
                 returns.status = 0;
                 returns.func = 20;
                 returns.target = valid_cell3(cell);
-                returns.arg_type = 2;
+                returns.arg_type = 0;
                 return returns;
             }
         }

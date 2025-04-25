@@ -11,7 +11,7 @@ pub enum DependencyNums {
 /// This representation can represent all kinds of dependencies
 /// FN(RANGE_START: RANGE_END)
 /// OPER(CELL, VAL), e.g. DIV(2, A1) for =2/A1
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct DependencyData {
     oper: u8,
     pre: DependencyNums,
