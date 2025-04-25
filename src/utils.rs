@@ -67,7 +67,7 @@ pub fn topological_sort(db: &Database, start: u32) -> Result<Vec<u32>, ()> {
 pub fn rem_dep(db: &mut Database, dep: Option<DependencyData>, cell_idx: u32) {
     match dep {
         Some(dep) => {
-            if dep.get_oper() <= 6 {
+            if (dep.get_oper() <= 6) | (dep.get_oper() == 12) {
                 match dep.get_pre() {
                     DependencyNums::U32(u) => db.rem_dep_point(u, cell_idx),
                     _ => {}
@@ -77,7 +77,7 @@ pub fn rem_dep(db: &mut Database, dep: Option<DependencyData>, cell_idx: u32) {
                     _ => {}
                 }
             } else {
-                db.rem_dep_range(cell_idx);
+                db.rem_dep_range(cell_idx, dep.clone());
             };
         }
         None => {}

@@ -117,7 +117,7 @@ fn evaluate(db: &mut Database, cell_idx: u32) {
             panic!()
         };
 
-        if pre.has_error() || post.has_error() {
+        if pre.has_error() | post.has_error() {
             target.set_error(true);
             return;
         }
@@ -232,6 +232,7 @@ fn min_fn(db: &mut Database, cell_idx: u32) {
     };
 
     target.set_data_f(min_val);
+    target.set_error(false);
 }
 
 fn max_fn(db: &mut Database, cell_idx: u32) {
@@ -295,6 +296,7 @@ fn max_fn(db: &mut Database, cell_idx: u32) {
     };
 
     target.set_data_f(max_val);
+    target.set_error(false);
 }
 
 fn avg_fn(db: &mut Database, cell_idx: u32) {
@@ -345,6 +347,7 @@ fn avg_fn(db: &mut Database, cell_idx: u32) {
     };
 
     target.set_data_f(avg);
+    target.set_error(false);
 }
 
 fn sum_fn(db: &mut Database, cell_idx: u32) {
@@ -408,6 +411,7 @@ fn sum_fn(db: &mut Database, cell_idx: u32) {
     };
 
     target.set_data_f(sum);
+    target.set_error(false);
 }
 
 fn stdev_fn(db: &mut Database, cell_idx: u32) {}
@@ -612,7 +616,7 @@ pub fn evaluator(
                     _ => {}
                 }
             } else {
-                db.rem_dep_range((r.target - 1001) as u32);
+                db.rem_dep_range((r.target - 1001) as u32, dep.clone());
             };
         }
         None => {}
@@ -773,7 +777,7 @@ pub fn evaluator(
                         _ => {}
                     }
                 } else {
-                    db.rem_dep_range((r.target - 1001) as u32);
+                    db.rem_dep_range((r.target - 1001) as u32, dep.clone());
                 };
             }
             None => {}

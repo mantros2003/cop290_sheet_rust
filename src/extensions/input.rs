@@ -74,7 +74,7 @@ pub fn handle_input(app: &mut App) -> std::io::Result<Option<AppCommand>> {
                         // Try f32
                         let ip_fl = ip.parse::<f32>();
                         match ip_fl {
-                            Ok(f) => {
+                            Ok(_) => {
                                 app.mode = Mode::ErrMsg("FLOATS UNDER PROGRESS");
                                 app.input_buffer.clear();
                                 return Ok(None);

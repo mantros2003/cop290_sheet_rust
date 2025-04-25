@@ -7,7 +7,7 @@ pub mod range;
 use cell::{Cell, CellData};
 
 use dep_store::DepStore;
-use range::{DependencyData, DependencyNums, DependencyObject};
+use range::{DependencyData, DependencyObject};
 
 /// Struct for database
 /// Data is stored in a hashmap that maps cell index to the cell struct for that cell
@@ -210,18 +210,16 @@ impl Database {
         self.range_deps.insert(dep);
     }
 
-    pub fn rem_dep_range(&mut self, cell_idx: u32) {
-        self.range_deps.remove(DependencyObject::new(
+    pub fn rem_dep_range(&mut self, cell_idx: u32, dep: DependencyData) {
+        self.range_deps.remove(DependencyObject::from_dep_data(
             cell_idx,
-            0,
-            DependencyNums::U32(0),
-            DependencyNums::U32(0),
+            dep
         ));
     }
 
-    pub fn rem_deps(&mut self, cell_idx: u32) {
-        self.rem_dep_range(cell_idx);
-    }
+    // pub fn rem_deps(&mut self, cell_idx: u32) {
+    //     self.rem_dep_range(cell_idx);
+    // }
 
     // Children are those cells which depend on the parent cell
     pub fn cell_has_child(&self, cell_idx: u32) -> bool {
