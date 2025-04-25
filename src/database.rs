@@ -31,14 +31,6 @@ impl Database {
         }
     }
 
-    pub fn num_rows(&self) -> u16 {
-        self.num_rows
-    }
-
-    pub fn num_cols(&self) -> u16 {
-        self.num_cols
-    }
-
     /// Gets the data at cell represented by cell_idx
     /// returns Err(false) if cell out of range
     /// else returns Err(true) if cell has cell.error set as true

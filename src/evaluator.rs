@@ -415,7 +415,7 @@ fn sum_fn(db: &mut Database, cell_idx: u32) {
 }
 
 fn stdev_fn(db: &mut Database, cell_idx: u32) {
-    let mut avg;
+    let avg;
 
     avg_fn(db, cell_idx);
     avg = match db.get(cell_idx) {
@@ -888,4 +888,18 @@ pub fn evaluator(
 
     // Fallback return, if none of the commands match
     0
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::parser;
+    use super::*;
+
+    #[test]
+    fn test() {
+        let mut db = Database::new(100, 100);
+
+        let r = parser::parse("A1=100");
+        assert!(r == Response{status: 0, func: 1, target: 1001, arg1: 100, arg2: 0, arg_type:  0}, "r = {:?}", r);
+    }
 }

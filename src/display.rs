@@ -8,7 +8,7 @@ const MAX_COLS: u32 = 10;
 
 pub fn generate_column_label(mut col_index: u32) -> String {
     let mut label = String::new();
-    while col_index >= 0 {
+    loop {
         label.push(((col_index % 26) as u8 + b'A') as char);
         if col_index < 26 {
             break;

@@ -1,4 +1,4 @@
-#[derive(Default, Debug)]
+#[derive(Default, Debug, PartialEq)]
 pub struct Response {
     pub status: i32,
     pub func: i32,
