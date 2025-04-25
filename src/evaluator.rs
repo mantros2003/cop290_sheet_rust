@@ -414,7 +414,87 @@ fn sum_fn(db: &mut Database, cell_idx: u32) {
     target.set_error(false);
 }
 
-fn stdev_fn(db: &mut Database, cell_idx: u32) {}
+fn stdev_fn(db: &mut Database, cell_idx: u32) {
+    let mut avg;
+
+    avg_fn(db, cell_idx);
+    avg = match db.get(cell_idx) {
+        Ok(data) => {
+            match data {
+                CellData::FloatData(f) => f,
+                _ => panic!()
+            }
+        },
+        Err(true) => {
+            let _ = db.set_error(cell_idx, true);
+            return;
+        }
+        _ => panic!("Should have been Ok or Err(true)")
+    };
+
+    let pre;
+    let post;
+    if let Some(dep) = db.get_cell_parent_dep(cell_idx) {
+        match (dep.get_pre(), dep.get_post()) {
+            (DependencyNums::U32(pred), DependencyNums::U32(posd)) => {
+                pre = pred;
+                post = posd;
+            }
+            (_, _) => {
+                panic!();
+            }
+        }
+    } else {
+        panic!();
+    }
+
+    let row_low = pre % 1000;
+    let row_high = post % 1000;
+    let col_low = pre / 1000;
+    let col_high = post / 1000;
+
+    let mut var: f32 = 0.0;
+
+    for col in col_low..=col_high {
+        for row in row_low..=row_high {
+            let data;
+            data = match db.get(1000 * col + row) {
+                Ok(d) => match d {
+                    CellData::IntData(i) => *i as f32,
+                    CellData::FloatData(f) => *f,
+                },
+                Err(true) => {
+                    let target;
+                    if let Ok(cell) = db.get_cell_mut(cell_idx) {
+                        target = cell
+                    } else {
+                        panic!()
+                    };
+
+                    target.set_error(true);
+                    return;
+                }
+                Err(false) => {
+                    panic!("Should have been Ok or Err(true)");
+                }
+            };
+
+            var += (data - avg).powi(2);
+        }
+
+        var /= ((row_high - row_low + 1) * (col_high - col_low + 1)) as f32;
+    }
+
+    let target;
+    if let Ok(cell) = db.get_cell_mut(cell_idx) {
+        target = cell
+    } else {
+        panic!()
+    };
+
+    target.set_data_f(var);
+    target.set_error(false);
+}
 
 fn sleep_fn(db: &mut Database, cell_idx: u32) {
     let dep = db.get_cell_parent_dep(cell_idx);
@@ -546,7 +626,7 @@ pub fn evaluator(
                 col + 10
             };
         }
-        15 => col = if row as i32 - 10 < 0 { 0 } else { col - 10 },
+        15 => col = if col as i32 - 10 < 0 { 0 } else { col - 10 },
         16 => {
             row = if row + 20 > db.num_rows as u32 {
                 if db.num_rows as i32 - 10 < 0 {
