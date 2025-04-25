@@ -898,8 +898,11 @@ mod tests {
     #[test]
     fn test() {
         let mut db = Database::new(100, 100);
+        let mut state: (u32, bool, bool) = (0, true, true);
 
-        let r = parser::parse("A1=100");
+        let mut r = parser::parse("A1=100");
         assert!(r == Response{status: 0, func: 1, target: 1001, arg1: 100, arg2: 0, arg_type:  0}, "r = {:?}", r);
+
+        let mut ec = evaluator(r, &mut db, &mut state.0, &mut state.1, &mut state.2);
     }
 }

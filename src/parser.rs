@@ -199,7 +199,7 @@ fn valid_comp(r1: &str, r2: &str, s1: &str, s2: &str) -> bool {
             return true;
         }
     }
-    return true;
+    return false;
 }
 
 fn valid_range(s: &str, equal_expr: &mut String, post_expr: &mut String) -> i32 {
