@@ -6,6 +6,10 @@ const CELL_WIDTH: u32 = 12;
 const MAX_ROWS: u32 = 10;
 const MAX_COLS: u32 = 10;
 
+///function generate column label :
+///returns the corresponding column
+///to given an integer
+///
 pub fn generate_column_label(mut col_index: u32) -> String {
     let mut label = String::new();
     loop {
@@ -19,6 +23,9 @@ pub fn generate_column_label(mut col_index: u32) -> String {
 }
 
 #[cfg(not(tarpaulin_include))]
+///function print_spreadsheet :
+///prints the spreadsheet
+///
 pub fn print_spreadsheet(db: &Database, top_left_cell: u32) {
     let top_left_col = top_left_cell / 1000;
     let top_left_row = top_left_cell % 1000;

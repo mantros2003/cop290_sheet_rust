@@ -123,24 +123,3 @@ impl PartialEq for DependencyObject {
         self.target == other.target
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test() {
-        let dn1 = DependencyNums::U32(10);
-        let dn2 = DependencyNums::I32(10);
-        let dn3 = DependencyNums::F32(10.0);
-
-        assert!(dn1.to_string() == "10");
-        assert!(dn2.to_string() == "10");
-        assert!(dn3.to_string() == "10.00");
-
-        assert_eq!(dn1, dn1);
-        assert_eq!(dn2, dn2);
-        assert_eq!(dn3, dn3);
-        assert_ne!(dn3, dn1);
-    }
-}

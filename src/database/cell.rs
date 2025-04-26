@@ -223,19 +223,31 @@ mod tests {
     #[test]
     fn test_celldata_add() {
         assert!(
-            matches!(CellData::IntData(5) + CellData::IntData(3), CellData::IntData(8)),
+            matches!(
+                CellData::IntData(5) + CellData::IntData(3),
+                CellData::IntData(8)
+            ),
             "Int + Int failed"
         );
         assert!(
-            matches!(CellData::IntData(5) + CellData::FloatData(3.5), CellData::FloatData(8.5)),
+            matches!(
+                CellData::IntData(5) + CellData::FloatData(3.5),
+                CellData::FloatData(8.5)
+            ),
             "Int + Float failed"
         );
         assert!(
-            matches!(CellData::FloatData(5.5) + CellData::IntData(3), CellData::FloatData(8.5)),
+            matches!(
+                CellData::FloatData(5.5) + CellData::IntData(3),
+                CellData::FloatData(8.5)
+            ),
             "Float + Int failed"
         );
         assert!(
-            matches!(CellData::FloatData(5.5) + CellData::FloatData(3.2), CellData::FloatData(8.7)),
+            matches!(
+                CellData::FloatData(5.5) + CellData::FloatData(3.2),
+                CellData::FloatData(8.7)
+            ),
             "Float + Float failed"
         );
     }
@@ -243,19 +255,31 @@ mod tests {
     #[test]
     fn test_celldata_sub() {
         assert!(
-            matches!(CellData::IntData(5) - CellData::IntData(3), CellData::IntData(2)),
+            matches!(
+                CellData::IntData(5) - CellData::IntData(3),
+                CellData::IntData(2)
+            ),
             "Int - Int failed"
         );
         assert!(
-            matches!(CellData::IntData(5) - CellData::FloatData(3.5), CellData::FloatData(1.5)),
+            matches!(
+                CellData::IntData(5) - CellData::FloatData(3.5),
+                CellData::FloatData(1.5)
+            ),
             "Int - Float failed"
         );
         assert!(
-            matches!(CellData::FloatData(5.5) - CellData::IntData(3), CellData::FloatData(2.5)),
+            matches!(
+                CellData::FloatData(5.5) - CellData::IntData(3),
+                CellData::FloatData(2.5)
+            ),
             "Float - Int failed"
         );
         assert!(
-            matches!(CellData::FloatData(5.5) - CellData::FloatData(3.2), CellData::FloatData(2.3)),
+            matches!(
+                CellData::FloatData(5.5) - CellData::FloatData(3.2),
+                CellData::FloatData(2.3)
+            ),
             "Float - Float failed"
         );
     }
@@ -263,19 +287,31 @@ mod tests {
     #[test]
     fn test_celldata_mul() {
         assert!(
-            matches!(CellData::IntData(5) * CellData::IntData(3), CellData::IntData(15)),
+            matches!(
+                CellData::IntData(5) * CellData::IntData(3),
+                CellData::IntData(15)
+            ),
             "Int * Int failed"
         );
         assert!(
-            matches!(CellData::IntData(5) * CellData::FloatData(3.5), CellData::FloatData(17.5)),
+            matches!(
+                CellData::IntData(5) * CellData::FloatData(3.5),
+                CellData::FloatData(17.5)
+            ),
             "Int * Float failed"
         );
         assert!(
-            matches!(CellData::FloatData(5.5) * CellData::IntData(3), CellData::FloatData(16.5)),
+            matches!(
+                CellData::FloatData(5.5) * CellData::IntData(3),
+                CellData::FloatData(16.5)
+            ),
             "Float * Int failed"
         );
         assert!(
-            matches!(CellData::FloatData(5.0) * CellData::FloatData(3.0), CellData::FloatData(15.0)),
+            matches!(
+                CellData::FloatData(5.0) * CellData::FloatData(3.0),
+                CellData::FloatData(15.0)
+            ),
             "Float * Float failed"
         );
     }
@@ -297,30 +333,21 @@ mod tests {
 
         let res_int_float = CellData::IntData(10) / CellData::FloatData(3.0);
         if let Ok(CellData::FloatData(val)) = res_int_float {
-            assert!(
-                (val - 3.3333333).abs() < epsilon,
-                "Int / Float failed"
-            );
+            assert!((val - 3.3333333).abs() < epsilon, "Int / Float failed");
         } else {
             panic!("Int / Float did not return FloatData");
         }
 
         let res_float_int = CellData::FloatData(10.0) / CellData::IntData(3);
         if let Ok(CellData::FloatData(val)) = res_float_int {
-            assert!(
-                (val - 3.3333333).abs() < epsilon,
-                "Float / Int failed"
-            );
+            assert!((val - 3.3333333).abs() < epsilon, "Float / Int failed");
         } else {
             panic!("Float / Int did not return FloatData");
         }
 
         let res_float = CellData::FloatData(10.0) / CellData::FloatData(3.0);
         if let Ok(CellData::FloatData(val)) = res_float {
-            assert!(
-                (val - 3.3333333).abs() < epsilon,
-                "Float / Float failed"
-            );
+            assert!((val - 3.3333333).abs() < epsilon, "Float / Float failed");
         } else {
             panic!("Float / Float did not return FloatData");
         }
@@ -341,7 +368,10 @@ mod tests {
             "Float / Int(0) failed"
         );
         assert!(
-            matches!(CellData::FloatData(10.0) / CellData::FloatData(0.0), Err(())),
+            matches!(
+                CellData::FloatData(10.0) / CellData::FloatData(0.0),
+                Err(())
+            ),
             "Float / Float(0.0) failed"
         );
         assert!(

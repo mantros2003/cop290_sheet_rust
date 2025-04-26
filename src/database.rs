@@ -11,6 +11,9 @@ use range::{DependencyData, DependencyObject};
 
 /// Struct for database
 /// Data is stored in a hashmap that maps cell index to the cell struct for that cell
+/// num_rows: total no of rows in the database
+/// num_cols: total no of columns in the database
+
 pub struct Database {
     pub num_rows: u16,
     pub num_cols: u16,
@@ -203,10 +206,8 @@ impl Database {
     }
 
     pub fn rem_dep_range(&mut self, cell_idx: u32, dep: DependencyData) {
-        self.range_deps.remove(DependencyObject::from_dep_data(
-            cell_idx,
-            dep
-        ));
+        self.range_deps
+            .remove(DependencyObject::from_dep_data(cell_idx, dep));
     }
 
     // pub fn rem_deps(&mut self, cell_idx: u32) {

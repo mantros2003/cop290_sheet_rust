@@ -1,4 +1,13 @@
 #[derive(Default, Debug, PartialEq)]
+
+///struct Response :
+///stores parsed output in a particular format
+///status: Error code
+///func: Applied function
+///target: Target cell
+///arg1, arg2 : arguments
+///arg_type: type of argument(s)
+///
 pub struct Response {
     pub status: i32,
     pub func: i32,
@@ -8,6 +17,9 @@ pub struct Response {
     pub arg_type: i32,
 }
 
+///function ib  :
+///maps bool to integers (false -> 0 , true -> Z\{0})
+///
 fn ib(integer: i32) -> bool {
     if integer == 0 {
         return false;
@@ -15,6 +27,10 @@ fn ib(integer: i32) -> bool {
     return true;
 }
 
+///function valid_row :
+///given true for all instances of a valid row (false otherwise)
+///(eg. "1"-> true , "891"->true , "5735" -> false )
+///
 fn valid_row(s: &str) -> bool {
     let len = s.len();
 
@@ -33,6 +49,10 @@ fn valid_row(s: &str) -> bool {
     true
 }
 
+///function valid_row2 :
+///given integer value of row for all instances of a valid row (0 otherwise)
+///(eg. "1"-> 1, "891"->891 , "5735" -> 0 )
+///
 fn valid_row2(s: &str) -> i32 {
     let len = s.len();
 
@@ -50,7 +70,10 @@ fn valid_row2(s: &str) -> i32 {
 
     s.parse::<i32>().unwrap_or(0)
 }
-
+///function valid_column :
+///given true for all instances of a valid colum (false otherwise)
+///(eg. "A"-> true , "JFV"->true , "ABCF" -> false )
+///
 fn valid_column(s: &str) -> bool {
     let len = s.len();
 
@@ -65,6 +88,11 @@ fn valid_column(s: &str) -> bool {
     true
 }
 
+///function valid_colum2 :
+///given integer value of col(a mapping from columns to ints ) for
+///all instances of a valid columns (0 otherwise)
+///(eg. "A"-> 1, "AC"->29 , "DAVB" -> 0 )
+///
 fn valid_column2(s: &str) -> i32 {
     let len = s.len();
 
@@ -82,6 +110,12 @@ fn valid_column2(s: &str) -> i32 {
 
     ans
 }
+
+///function valid_integer :
+///gives integer value of a valid integer string
+///includes (-12374 , +1263 type )
+///rejects (-0027361 , +00236 type)
+///
 
 fn valid_integer(s: &str) -> bool {
     let len = s.len();
@@ -110,6 +144,11 @@ fn valid_integer(s: &str) -> bool {
         return bytes.iter().all(|&c| c.is_ascii_digit());
     }
 }
+///function valid_cell :
+///returns row and col of a given valid cell
+///and a boolean flag (true for valid cell)
+///(eg. "A1" -> (true , ("A , "1"))
+///
 
 fn valid_cell(s: &str) -> (bool, Option<(String, String)>) {
     let len = s.len();
@@ -138,6 +177,13 @@ fn valid_cell(s: &str) -> (bool, Option<(String, String)>) {
 
     (false, None)
 }
+
+///function valid_cell :
+///returns integer value of a given valid cell
+///(every cell is mapped to an unique
+///integer a value)
+///(eg. "A1" -> 1001 , "AC12" -> 29012)
+///
 
 fn valid_cell3(s: &str) -> i32 {
     let len = s.len();
@@ -172,6 +218,11 @@ fn valid_cell3(s: &str) -> i32 {
 
     0
 }
+///function valid_funciton :
+///returns correspondingr integer value
+/// of a given function (0 otherwises)
+///(eg. "MIN" -> 1 , "AVG" -> 3)
+///
 
 fn valid_function(s: &str) -> i32 {
     match s {
@@ -184,6 +235,12 @@ fn valid_function(s: &str) -> i32 {
         _ => 0,
     }
 }
+
+///function valid_comp:
+///returns bool true if given two    
+///cells CELL1 and CELL2 (CELL1:CELL2) is
+///a valid range (false otherwise)
+///
 
 fn valid_comp(r1: &str, r2: &str, s1: &str, s2: &str) -> bool {
     if r1.len() > s1.len() {
@@ -201,6 +258,14 @@ fn valid_comp(r1: &str, r2: &str, s1: &str, s2: &str) -> bool {
     }
     return false;
 }
+
+///function valid_raage:
+///returns 1 if given two    
+///cells CELL1 and CELL2 (CELL1:CELL2) is
+///a valid range , 2 if CELL1 and CELL2 are valid cells
+///but (CELL1:CELL2) is not a valid range
+///(0 otherwise)
+///
 
 fn valid_range(s: &str, equal_expr: &mut String, post_expr: &mut String) -> i32 {
     let length = s.len();
@@ -249,6 +314,12 @@ fn valid_range(s: &str, equal_expr: &mut String, post_expr: &mut String) -> i32 
     0
 }
 
+///function ret_value:
+///returns a integer value
+///corresponding to arithmatic operators  
+///(A mapping between arithmatic operators and {1,2,3,4})
+///(0 otherwise)
+///
 fn ret_values(c: char) -> i32 {
     match c {
         '+' => 3,
@@ -258,6 +329,13 @@ fn ret_values(c: char) -> i32 {
         _ => 0,
     }
 }
+
+///function valid_post_expr:
+///returns a integer value correcsponding to
+///a given arithmatic poertion
+///( {VALUE}{OPEN}{VALUE} )( eg. A1+B1)
+///(0 otherwise)
+///
 
 fn valid_post_expr(s: &str, equal_expr: &mut String, post_expr: &mut String) -> i32 {
     let length = s.len();
@@ -312,6 +390,12 @@ fn valid_post_expr(s: &str, equal_expr: &mut String, post_expr: &mut String) -> 
     0
 }
 
+///function parse_func:
+///returns a integer value correcsponding to
+///a given formula expression
+///( {FORMULA}({CELL1}:{CELL2}) )( eg. MAX(A1:B1))
+///(0 otherwise)
+///
 fn parse_func(s: &str, equal_expr: &mut String, exp1: &mut String, exp2: &mut String) -> i32 {
     let length = s.len();
     if length < 4 || s.is_empty() {
@@ -370,6 +454,11 @@ fn parse_func(s: &str, equal_expr: &mut String, exp1: &mut String, exp2: &mut St
     0
 }
 
+///function parse: return a Response struct
+///corresponding to an input command
+///eg. "A1=MAX(B1:X1)"
+///Response{status: 0, func: 8, target: 1001, arg1: 2001, arg2: 24001, arg_type:  3}
+///
 pub fn parse(s: &str) -> Response {
     let mut returns = Response::default();
     let length = s.len();
@@ -564,77 +653,99 @@ mod tests {
     fn test_1() {
         let str = "A1=MAX(B1:X1)";
         let ret = parse(str);
-        assert!(ret == Response{status: 0, func: 8, target: 1001, arg1: 2001, arg2: 24001, arg_type:  3}, "r = {:?}", ret);
+        assert!(
+            ret == Response {
+                status: 0,
+                func: 8,
+                target: 1001,
+                arg1: 2001,
+                arg2: 24001,
+                arg_type: 3
+            },
+            "r = {:?}",
+            ret
+        );
         println!("{ret:?}");
 
         let str2 = "A1=B1";
         let ret = parse(str2);
-        assert!(ret == Response{status: 0, func: 2, target: 1001, arg1: 2001, arg2: 0, arg_type:  2}, "r = {:?}", ret);
+        assert!(
+            ret == Response {
+                status: 0,
+                func: 2,
+                target: 1001,
+                arg1: 2001,
+                arg2: 0,
+                arg_type: 2
+            },
+            "r = {:?}",
+            ret
+        );
         let str2 = "A1=MAX(Z1:X1)";
     }
     #[test]
     fn test_2() {
-       let k1 = valid_row("abcd");
-       let k2 = valid_row("01");
-       let k3 = valid_row("1a");
-       assert!(k1==false);
-       assert!(k2==false);
-       assert!(k3==false);
-       
-       let k1 = valid_row2("abcd");
-       let k2 = valid_row2("01");
-       let k3 = valid_row2("1a");
-       assert!(k1==0);
-       assert!(k2==0);
-       assert!(k3==0);
-       
-       let k1 = valid_column("abcd");
-       let k2 = valid_column("01");
-       assert!(k1==false);
-       assert!(k2==false);
+        let k1 = valid_row("abcd");
+        let k2 = valid_row("01");
+        let k3 = valid_row("1a");
+        assert!(k1 == false);
+        assert!(k2 == false);
+        assert!(k3 == false);
 
-       let k1 = valid_column2("abcd");
-       let k2 = valid_column2("01");
-       assert!(k1==0);
-       assert!(k2==0);
-       
-       let k1 = valid_integer("");
-       let k2 = valid_integer("-");
-       let k3 = valid_integer("-0");
-       let k6 = valid_integer("0");
-       let k4 = valid_integer("-01");
-       let k7 = valid_integer("01");
-       let k5 = valid_integer("-1");
-       
-       assert!(k1==false);
-       assert!(k2==false);
-       assert!(k3==true);
-       assert!(k4==false);
-       assert!(k5==true);
+        let k1 = valid_row2("abcd");
+        let k2 = valid_row2("01");
+        let k3 = valid_row2("1a");
+        assert!(k1 == 0);
+        assert!(k2 == 0);
+        assert!(k3 == 0);
 
-       let k1 = valid_function("MIN");
-       let k2 = valid_function("MAX");
-       let k3 = valid_function("AVG");
-       let k4 = valid_function("SUM");
-       let k5 = valid_function("STDEV");
-       let k6 = valid_function("SLEEP");
-       let k7 = valid_function("VAR");
-       
-       assert!(k1==1);
-       assert!(k2==2);
-       assert!(k3==3);
-       assert!(k4==4);
-       assert!(k5==5);
-       assert!(k6==6);
-       assert!(k7==0);
-       
-       let add = valid_cell("we");
-       let add = valid_cell("00");
-       let add = valid_cell3("A11111");
-       let add = valid_cell3("AAAA11");
-       let add = valid_comp("aa" , "a" , "a" , "a");
-       let add = valid_comp("AA" , "1" , "AA" , "1");
-       let add = valid_comp("AA" , "1" , "AA" , "2");
-       let add = valid_comp("A" , "1" , "AA" , "3");
+        let k1 = valid_column("abcd");
+        let k2 = valid_column("01");
+        assert!(k1 == false);
+        assert!(k2 == false);
+
+        let k1 = valid_column2("abcd");
+        let k2 = valid_column2("01");
+        assert!(k1 == 0);
+        assert!(k2 == 0);
+
+        let k1 = valid_integer("");
+        let k2 = valid_integer("-");
+        let k3 = valid_integer("-0");
+        let k6 = valid_integer("0");
+        let k4 = valid_integer("-01");
+        let k7 = valid_integer("01");
+        let k5 = valid_integer("-1");
+
+        assert!(k1 == false);
+        assert!(k2 == false);
+        assert!(k3 == true);
+        assert!(k4 == false);
+        assert!(k5 == true);
+
+        let k1 = valid_function("MIN");
+        let k2 = valid_function("MAX");
+        let k3 = valid_function("AVG");
+        let k4 = valid_function("SUM");
+        let k5 = valid_function("STDEV");
+        let k6 = valid_function("SLEEP");
+        let k7 = valid_function("VAR");
+
+        assert!(k1 == 1);
+        assert!(k2 == 2);
+        assert!(k3 == 3);
+        assert!(k4 == 4);
+        assert!(k5 == 5);
+        assert!(k6 == 6);
+        assert!(k7 == 0);
+
+        let add = valid_cell("we");
+        let add = valid_cell("00");
+        let add = valid_cell3("A11111");
+        let add = valid_cell3("AAAA11");
+        let add = valid_comp("aa", "a", "a", "a");
+        let add = valid_comp("AA", "1", "AA", "1");
+        let add = valid_comp("AA", "1", "AA", "2");
+        let add = valid_comp("A", "1", "AA", "3");
     }
 }

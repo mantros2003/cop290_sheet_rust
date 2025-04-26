@@ -8,10 +8,19 @@ use std::error::Error;
 use std::fs::File;
 use std::io::{self, Write};
 
+///enum VisitState defines the visit status of
+///cells during traversal
+///
+
 enum VisitState {
     Visiting,
     Visited,
 }
+
+///function get_ip is designed to
+///read user input from the standard input (stdin),
+///with a maximum allowed size of sz - 1 characters
+///
 
 pub fn get_ip(sz: usize) -> String {
     let mut input = String::new();
@@ -25,6 +34,10 @@ pub fn get_ip(sz: usize) -> String {
     input.trim_end().chars().take(sz - 1).collect()
 }
 
+///function implements depth-first search (DFS) on
+///Database , with the goal of detecting cycles and
+///producing a topological ordering of nodes (if no cycles are found)
+///
 fn dfs(
     db: &Database,
     node: u32,
@@ -50,6 +63,9 @@ fn dfs(
     false
 }
 
+///function topological_sort performs a topological
+///sort starting from a given node in Database
+///
 pub fn topological_sort(db: &Database, start: u32) -> Result<Vec<u32>, ()> {
     let mut visited = HashMap::new();
     let mut result = Vec::new();
@@ -85,6 +101,10 @@ pub fn topological_sort(db: &Database, start: u32) -> Result<Vec<u32>, ()> {
 // }
 
 #[cfg(not(tarpaulin_include))]
+
+///function save_to_csv is used to save
+///the current state of the Database into a CSV file
+///
 pub fn save_to_csv(db: &Database, path: &str) -> Result<(), Box<dyn Error>> {
     // Prepare the 2D vector
     let mut table: Vec<Vec<String>> =
@@ -111,6 +131,9 @@ pub fn save_to_csv(db: &Database, path: &str) -> Result<(), Box<dyn Error>> {
 }
 
 #[cfg(not(tarpaulin_include))]
+///The load_from_csv function reads a CSV file
+///and populates a Database
+///
 pub fn load_from_csv(path: &str) -> Result<Database, Box<dyn Error>> {
     let mut db = Database::new(0, 0);
     let mut rdr = csv::ReaderBuilder::new()
@@ -146,6 +169,9 @@ pub fn load_from_csv(path: &str) -> Result<Database, Box<dyn Error>> {
 }
 
 #[cfg(not(tarpaulin_include))]
+///function get_formula function retrieves and reconstructs the
+///original formula for a given cell and database
+///
 pub fn get_formula(db: &Database, cell_idx: u32) -> String {
     if let Ok(cell) = db.get_cell(cell_idx) {
         if let Some(dep) = cell.get_dep() {
@@ -269,6 +295,10 @@ pub fn get_formula(db: &Database, cell_idx: u32) -> String {
 }
 
 #[cfg(not(tarpaulin_include))]
+
+///function extract_range_data extracts numeric
+///data from a rectangular range in a spreadsheet
+///
 pub fn extract_range_data(app: &App) -> Vec<(String, f32)> {
     if let Mode::Graph((r1, c1), (r2, c2)) = app.mode {
         let (row_low, row_high) = if r1 <= r2 { (r1, r2) } else { (r2, r1) };
@@ -306,6 +336,9 @@ pub fn extract_range_data(app: &App) -> Vec<(String, f32)> {
 }
 
 #[cfg(not(tarpaulin_include))]
+//function centered_rect computes a rectangle centered inside a given parent Rect,
+///occupying a specified percentage of its width and height
+///
 pub fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
     let popup_layout = Layout::default()
         .direction(Direction::Vertical)
@@ -327,6 +360,9 @@ pub fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
 }
 
 #[cfg(not(tarpaulin_include))]
+///function transform_data_for_barchart
+///prepares data for use in a bar chart
+///
 pub fn transform_data_for_barchart(data: &Vec<(String, f32)>) -> Vec<(&str, u64)> {
     data.iter()
         .map(|(label, value)| {
