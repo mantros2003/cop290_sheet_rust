@@ -33,18 +33,27 @@ This project is a terminal-based spreadsheet application designed for efficiency
 1. **Prerequisites**: Install Rust and Cargo.
 2. **Clone the Repository**: 
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/mantros2003/cop290_sheet_rust.git
    ```
 3. **Build and run**:
    ```bash
    cargo build --release
    cargo run -- <num_rows> <num_columns> --extension
    ```
-   - 0 < num_rows <= 999\
-   - 0 < num_cols <= 18278\
+   - 0 < num_rows <= 999
+   - 0 < num_cols <= 18278
    - --extension to run TUI mode
+4. **Build using Makefile**:
+   - ```bash
+     make
+     ```
+     to build the executable. The executable will be in target/release/ directory.
+   - ```bash
+     make ext1
+     ```
+     runs the spreadsheet in TUI mode with 999 rows and 18,278 columns.
 
-4. **Using the application**:
+## Using the application
    - Start the app by using the commands given above.  Run TUI mode for a better experience.
    - Once the app is loaded, you will be in Insert mode. To navigate, you can use arrow keys.
    - Now, to enter values into a cell, switch to insert mode by pressing i. Once in Insert mode, you cannot navigate to another unless you go back to Normal mode by pressing Esc. Enter the data, or a formula by prefixing a '=' to the formula like:
